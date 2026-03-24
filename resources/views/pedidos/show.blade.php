@@ -60,14 +60,16 @@
                 @endif
             </div>
 
-            <div>
-                <p class="text-xs text-gray-400 uppercase font-medium mb-1">Tipo de pago</p>
-                @if($pedido->tipo_pago == 'efectivo')
-                    <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-medium">Efectivo</span>
-                @else
-                    <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">Transferencia</span>
-                @endif
-            </div>
+            @if($pedido->estado_pago == 'pagado')
+                <div>
+                    <p class="text-xs text-gray-400 uppercase font-medium mb-1">Tipo de pago</p>
+                    @if($pedido->tipo_pago == 'efectivo')
+                        <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-medium">Efectivo</span>
+                    @else
+                        <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">Transferencia</span>
+                    @endif
+                </div>
+            @endif
 
         </div>
 

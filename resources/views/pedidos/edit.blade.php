@@ -71,14 +71,14 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Estado de pago</label>
-                    <select name="estado_pago"
+                    <select name="estado_pago" id="estado_pago"
                             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400">
                         <option value="no_pagado" {{ old('estado_pago', $pedido->estado_pago) == 'no_pagado' ? 'selected' : '' }}>No pagado</option>
                         <option value="pagado"    {{ old('estado_pago', $pedido->estado_pago) == 'pagado'    ? 'selected' : '' }}>Pagado</option>
                     </select>
                 </div>
 
-                <div>
+                <div id="tipo-pago-field" class="sm:col-span-2" style="display:none">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de pago</label>
                     <select name="tipo_pago"
                             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400">
@@ -102,5 +102,17 @@
 
         </form>
     </div>
+
+    <script>
+        const estadoPago = document.getElementById('estado_pago');
+        const tipoPagoField = document.getElementById('tipo-pago-field');
+
+        function toggleTipoPago() {
+            tipoPagoField.style.display = estadoPago.value === 'pagado' ? 'block' : 'none';
+        }
+
+        estadoPago.addEventListener('change', toggleTipoPago);
+        toggleTipoPago();
+    </script>
 
 @endsection

@@ -29,7 +29,11 @@ class PedidoController extends Controller
 
     public function store(PedidoRequest $request)
     {
-        Pedido::create($request->validated());
+        $data = $request->validated();
+        if ($data['estado_pago'] === 'no_pagado') {
+            $data['tipo_pago'] = null;
+        }
+        Pedido::create($data);
         return redirect()->route('pedidos.index')->with('success', 'Pedido cargado correctamente.');
     }
 
@@ -45,7 +49,11 @@ class PedidoController extends Controller
 
     public function update(PedidoRequest $request, Pedido $pedido)
     {
-        $pedido->update($request->validated());
+        $data = $request->validated();
+        if ($data['estado_pago'] === 'no_pagado') {
+            $data['tipo_pago'] = null;
+        }
+        $pedido->update($data);
         return redirect()->route('pedidos.index')->with('success', 'Pedido actualizado correctamente.');
     }
 

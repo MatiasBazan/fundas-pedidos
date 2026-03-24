@@ -78,13 +78,13 @@
                     @endif
                     @if($pedido->estado_pago == 'pagado')
                         <span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">Pagado</span>
+                        @if($pedido->tipo_pago == 'efectivo')
+                            <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-medium">Efectivo</span>
+                        @else
+                            <span class="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-medium">Transferencia</span>
+                        @endif
                     @else
                         <span class="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-medium">No pagado</span>
-                    @endif
-                    @if($pedido->tipo_pago == 'efectivo')
-                        <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-medium">Efectivo</span>
-                    @else
-                        <span class="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-medium">Transferencia</span>
                     @endif
                 </div>
                 <div class="flex gap-3 border-t border-gray-100 pt-3">
@@ -147,10 +147,14 @@
                         @endif
                     </td>
                     <td class="px-4 py-3">
-                        @if($pedido->tipo_pago == 'efectivo')
-                            <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-medium">Efectivo</span>
+                        @if($pedido->estado_pago == 'pagado')
+                            @if($pedido->tipo_pago == 'efectivo')
+                                <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-medium">Efectivo</span>
+                            @else
+                                <span class="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-medium">Transferencia</span>
+                            @endif
                         @else
-                            <span class="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-medium">Transferencia</span>
+                            <span class="text-gray-300 text-xs">—</span>
                         @endif
                     </td>
                     <td class="px-4 py-3">
