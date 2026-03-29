@@ -151,4 +151,64 @@ class PedidoController extends Controller
         $pedido->delete();
         return redirect()->route('pedidos.index')->with('success', 'Pedido eliminado correctamente.');
     }
+
+    public function dashboard()
+    {
+        // Estadísticas generales
+        $totalPedidos = Pedido::count();
+        $totalIngresos = Pedido::where('estado_pago', 'pagado')->sum('precio');
+        $pedidosPendientesPago = Pedido::where('estado_pago', 'no_pagado')->count();
+        $montoPendiente = Pedido::where('estado_pago', 'no_pagado')->sum('precio');
+
+        // Por estado de pedido
+        $estadosPedido = Pedido::selectRaw('estado_pedido, COUNT(*) as cantidad, SUM(precio) as total')
+            ->groupBy('estado_pedido')
+            ->get();
+
+        // Por estado de pago
+        $estadosPago = Pedido::selectRaw('estado_pago, COUNT(*) as cantidad, SUM(precio) as total')
+            ->groupBy('estado_pago')
+            ->get();
+
+        // Por tipo de pago
+        $tiposPago = Pedido::selectRaw('tipo_pago, COUNT(*) as cantidad, SUM(precio) as total')
+            ->whereNotNull('tipo_pago')
+            ->groupBy('tipo_pago')
+            ->get();
+
+        // Marcas más vendidas
+        $marcasTop = Pedido::selectRaw('marca, COUNT(*) as cantidad, SUM(precio) as total')
+            ->groupBy('marca')
+            ->orderByDesc('cantidad')
+            ->limit(5)
+            ->get();
+
+        // Modelos más vendidos
+        $modelosTop = Pedido::selectRaw('modelo, marca, COUNT(*) as cantidad, SUM(precio) as total')
+            ->groupBy('modelo', 'marca')
+            ->orderByDesc('cantidad')
+            ->limit(5)
+            ->get();
+
+        // Pedidos por mes (últimos 6 meses)
+        $pedidosPorMes = Pedido::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as mes, COUNT(*) as cantidad, SUM(precio) as total')
+            ->where('created_at', '>=', now()->subMonths(6))
+            ->groupBy('mes')
+            ->orderBy('mes')
+            ->get();
+
+        return view('pedidos.dashboard', compact(
+            'totalPedidos',
+            'totalIngresos',
+            'pedidosPendientesPago',
+            'montoPendiente',
+            'estadosPedido',
+            'estadosPago',
+            'tiposPago',
+            'marcasTop',
+            'modelosTop',
+            'pedidosPorMes'
+        ));
+    }
+
 }
