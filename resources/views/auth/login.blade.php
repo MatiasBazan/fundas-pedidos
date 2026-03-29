@@ -11,7 +11,10 @@
                     <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-orange-400 to-orange-500 rounded-2xl shadow-xl mb-4 transform hover:scale-105 transition-transform duration-200">
                         <img src="{{ asset('images/logo.png') }}" alt="DF Cases" class="w-12 h-12 object-contain">
                     </div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Bienvenido a DF Cases</h1>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                        <span class="block">Bienvenido</span>
+                        <span class="block">a DF Cases</span>
+                    </h1>
                     <p class="text-gray-600">Ingresa tus credenciales para continuar</p>
                 </div>
 
