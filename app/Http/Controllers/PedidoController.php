@@ -190,8 +190,8 @@ class PedidoController extends Controller
             ->limit(5)
             ->get();
 
-        // Pedidos por mes (últimos 6 meses)
-        $pedidosPorMes = Pedido::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as mes, COUNT(*) as cantidad, SUM(precio) as total')
+        // Pedidos por mes (últimos 6 meses) - Compatible con PostgreSQL
+        $pedidosPorMes = Pedido::selectRaw("TO_CHAR(created_at, 'YYYY-MM') as mes, COUNT(*) as cantidad, SUM(precio) as total")
             ->where('created_at', '>=', now()->subMonths(6))
             ->groupBy('mes')
             ->orderBy('mes')
