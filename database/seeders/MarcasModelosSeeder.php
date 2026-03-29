@@ -74,17 +74,18 @@ class MarcasModelosSeeder extends Seeder
         ];
 
         foreach ($catalogo as $nombreMarca => $modelos) {
-            $marca = Marca::create([
-                'nombre' => $nombreMarca,
-                'es_personalizada' => false
-            ]);
+            // Crear o actualizar la marca
+            $marca = Marca::updateOrCreate(
+                ['nombre' => $nombreMarca],
+                ['es_personalizada' => false]
+            );
 
             foreach ($modelos as $nombreModelo) {
-                Modelo::create([
-                    'marca_id' => $marca->id,
-                    'nombre' => $nombreModelo,
-                    'es_personalizado' => false
-                ]);
+                // Crear o actualizar el modelo
+                Modelo::updateOrCreate(
+                    ['marca_id' => $marca->id, 'nombre' => $nombreModelo],
+                    ['es_personalizado' => false]
+                );
             }
         }
     }
