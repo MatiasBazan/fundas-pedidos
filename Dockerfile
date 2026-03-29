@@ -36,7 +36,5 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
 EXPOSE 8080
 
 # Comando de inicio
-CMD php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan migrate --force && \
+CMD php artisan migrate --force && \
     php artisan serve --host=0.0.0.0 --port=8080
