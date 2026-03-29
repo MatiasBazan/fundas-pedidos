@@ -38,4 +38,5 @@ EXPOSE 8080
 # Comando de inicio
 CMD php artisan migrate --force && \
     php artisan db:seed --class=AdminSeeder --force && \
+    php artisan db:seed --class=MarcasModelosSeeder --force && \
     php artisan serve --host=0.0.0.0 --port=8080
