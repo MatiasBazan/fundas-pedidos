@@ -18,18 +18,18 @@
             </div>
 
             <div>
-                <p class="text-xs text-gray-400 uppercase font-medium mb-1">Modelo de celular</p>
-                <p class="text-gray-800">{{ $pedido->modelo_celular }}</p>
+                <p class="text-xs text-gray-400 uppercase font-medium mb-1">Marca</p>
+                <p class="text-gray-800">{{ $pedido->marca }}</p>
             </div>
 
             <div>
-                <p class="text-xs text-gray-400 uppercase font-medium mb-1">Nombre</p>
-                <p class="text-gray-800">{{ $pedido->nombre }}</p>
+                <p class="text-xs text-gray-400 uppercase font-medium mb-1">Modelo</p>
+                <p class="text-gray-800">{{ $pedido->modelo }}</p>
             </div>
 
             <div>
-                <p class="text-xs text-gray-400 uppercase font-medium mb-1">Apellido</p>
-                <p class="text-gray-800">{{ $pedido->apellido }}</p>
+                <p class="text-xs text-gray-400 uppercase font-medium mb-1">Cliente</p>
+                <p class="text-gray-800">{{ $pedido->nombre }} {{ $pedido->apellido }}</p>
             </div>
 
             <div>
@@ -78,11 +78,11 @@
                class="flex-1 sm:flex-none text-center bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg text-sm font-medium transition">
                 Editar pedido
             </a>
-            <form method="POST" action="{{ route('pedidos.destroy', $pedido) }}"
-                  onsubmit="return confirm('¿Eliminar este pedido?')">
+            <form method="POST" action="{{ route('pedidos.destroy', $pedido) }}">
                 @csrf
                 @method('DELETE')
-                <button type="submit"
+                <button type="button"
+                        onclick="showDeleteModal(this.form, '{{ $pedido->nombre_disenio }}')"
                         class="flex-1 sm:flex-none border border-red-300 text-red-500 hover:bg-red-50 px-6 py-2 rounded-lg text-sm font-medium transition">
                     Eliminar
                 </button>
@@ -90,5 +90,8 @@
         </div>
 
     </div>
+
+    {{-- Modal de confirmación --}}
+    <x-delete-modal />
 
 @endsection

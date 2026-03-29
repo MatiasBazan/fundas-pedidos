@@ -8,7 +8,8 @@ class Pedido extends Model
 {
     protected $fillable = [
         'nombre_disenio',
-        'modelo_celular',
+        'marca',
+        'modelo',
         'nombre',
         'apellido',
         'precio',

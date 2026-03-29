@@ -54,7 +54,7 @@
             Total de pedidos mostrados: <span class="font-bold">{{ $pedidos->total() }}</span>
         </p>
         <p class="text-orange-700 font-bold text-lg">
-            Total: ${{ number_format($total, 2) }}
+            Total: ${{ number_format($total, 2, ',', '.') }}
         </p>
     </div>
 
@@ -65,9 +65,9 @@
                 <div class="flex justify-between items-start mb-2">
                     <div>
                         <p class="font-semibold text-gray-800">{{ $pedido->nombre_disenio }}</p>
-                        <p class="text-sm text-gray-500">{{ $pedido->modelo_celular }}</p>
+                        <p class="text-sm text-gray-500">{{ $pedido->marca }} - {{ $pedido->modelo }}</p>
                     </div>
-                    <p class="text-orange-500 font-bold">${{ number_format($pedido->precio, 2) }}</p>
+                    <p class="text-orange-500 font-bold">${{ number_format($pedido->precio, 2, ',', '.') }}</p>
                 </div>
                 <p class="text-sm text-gray-600 mb-3">{{ $pedido->nombre }} {{ $pedido->apellido }}</p>
                 <div class="flex gap-2 mb-3 flex-wrap">
@@ -92,11 +92,11 @@
                        class="flex-1 text-center text-sm text-gray-600 hover:text-orange-500 transition">Ver</a>
                     <a href="{{ route('pedidos.edit', $pedido) }}"
                        class="flex-1 text-center text-sm text-gray-600 hover:text-orange-500 transition">Editar</a>
-                    <form method="POST" action="{{ route('pedidos.destroy', $pedido) }}"
-                          onsubmit="return confirm('¿Eliminar este pedido?')" class="flex-1">
+                    <form method="POST" action="{{ route('pedidos.destroy', $pedido) }}" class="flex-1">
                         @csrf
                         @method('DELETE')
-                        <button type="submit"
+                        <button type="button"
+                                onclick="showDeleteModal(this.form, '{{ $pedido->nombre_disenio }}')"
                                 class="w-full text-sm text-gray-600 hover:text-red-500 transition">Eliminar</button>
                     </form>
                 </div>
@@ -115,6 +115,7 @@
             <tr>
                 <th class="px-4 py-3 text-left">#</th>
                 <th class="px-4 py-3 text-left">Diseño</th>
+                <th class="px-4 py-3 text-left">Marca</th>
                 <th class="px-4 py-3 text-left">Modelo</th>
                 <th class="px-4 py-3 text-left">Cliente</th>
                 <th class="px-4 py-3 text-left">Precio</th>
@@ -129,9 +130,10 @@
                 <tr class="hover:bg-orange-50 transition">
                     <td class="px-4 py-3 text-gray-500">{{ $pedido->id }}</td>
                     <td class="px-4 py-3 font-medium text-gray-800">{{ $pedido->nombre_disenio }}</td>
-                    <td class="px-4 py-3 text-gray-600">{{ $pedido->modelo_celular }}</td>
+                    <td class="px-4 py-3 text-gray-600">{{ $pedido->marca }}</td>
+                    <td class="px-4 py-3 text-gray-600">{{ $pedido->modelo }}</td>
                     <td class="px-4 py-3 text-gray-600">{{ $pedido->nombre }} {{ $pedido->apellido }}</td>
-                    <td class="px-4 py-3 text-gray-800 font-medium">${{ number_format($pedido->precio, 2) }}</td>
+                    <td class="px-4 py-3 text-gray-800 font-medium">${{ number_format($pedido->precio, 2, ',', '.') }}</td>
                     <td class="px-4 py-3">
                         @if($pedido->estado_pedido == 'disponible')
                             <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">Disponible</span>
@@ -163,11 +165,11 @@
                                class="text-gray-500 hover:text-orange-500 transition" title="Ver">👁</a>
                             <a href="{{ route('pedidos.edit', $pedido) }}"
                                class="text-gray-500 hover:text-orange-500 transition" title="Editar">✏️</a>
-                            <form method="POST" action="{{ route('pedidos.destroy', $pedido) }}"
-                                  onsubmit="return confirm('¿Eliminar este pedido?')">
+                            <form method="POST" action="{{ route('pedidos.destroy', $pedido) }}">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit"
+                                <button type="button"
+                                        onclick="showDeleteModal(this.form, '{{ $pedido->nombre_disenio }}')"
                                         class="text-gray-500 hover:text-red-500 transition" title="Eliminar">🗑</button>
                             </form>
                         </div>
@@ -175,7 +177,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="9" class="px-4 py-8 text-center text-gray-400">No hay pedidos cargados.</td>
+                    <td colspan="10" class="px-4 py-8 text-center text-gray-400">No hay pedidos cargados.</td>
                 </tr>
             @endforelse
             </tbody>
@@ -186,5 +188,8 @@
             </div>
         @endif
     </div>
+
+    {{-- Modal de confirmación --}}
+    <x-delete-modal />
 
 @endsection
