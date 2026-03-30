@@ -7,6 +7,7 @@ use App\Models\Marca;
 use App\Models\Modelo;
 use App\Http\Requests\PedidoRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 
 class PedidoController extends Controller
 {
@@ -15,11 +16,17 @@ class PedidoController extends Controller
         $query = Pedido::query()
             ->when($request->estado_pedido, fn($q, $v) => $q->where('estado_pedido', $v))
             ->when($request->estado_pago,   fn($q, $v) => $q->where('estado_pago', $v))
-            ->when($request->tipo_pago,     fn($q, $v) => $q->where('tipo_pago', $v));
+            ->when($request->tipo_pago,     fn($q, $v) => $q->where('tipo_pago', $v))
+            ->when($request->buscar,        fn($q, $v) => $q->where(function ($q) use ($v) {
+                $q->where('nombre', 'like', "%{$v}%")
+                  ->orWhere('apellido', 'like', "%{$v}%")
+                  ->orWhere('nombre_disenio', 'like', "%{$v}%")
+                  ->orWhere('marca', 'like', "%{$v}%")
+                  ->orWhere('modelo', 'like', "%{$v}%");
+            }));
 
         $total = $query->sum('precio');
-
-        $pedidos = $query->latest()->paginate(20);
+        $pedidos = $query->latest()->paginate(20)->withQueryString();
 
         return view('pedidos.index', compact('pedidos', 'total'));
     }
@@ -43,40 +50,8 @@ class PedidoController extends Controller
     {
         $data = $request->validated();
 
-        // Manejar marca personalizada o del catálogo
-        if ($request->filled('marca_otra')) {
-            $marca = Marca::firstOrCreate(
-                ['nombre' => $request->marca_otra],
-                ['es_personalizada' => true]
-            );
-            $data['marca'] = $marca->nombre;
-        } elseif ($request->filled('marca_id')) {
-            $marca = Marca::find($request->marca_id);
-            if ($marca) {
-                $data['marca'] = $marca->nombre;
-            } else {
-                return back()->withErrors(['marca_id' => 'Marca no encontrada'])->withInput();
-            }
-        } else {
-            return back()->withErrors(['marca_id' => 'Debe seleccionar o ingresar una marca'])->withInput();
-        }
-
-        // Manejar modelo personalizado o del catálogo
-        if ($request->filled('modelo_otro')) {
-            $modelo = Modelo::firstOrCreate(
-                ['marca_id' => $marca->id, 'nombre' => $request->modelo_otro],
-                ['es_personalizado' => true]
-            );
-            $data['modelo'] = $modelo->nombre;
-        } elseif ($request->filled('modelo_id')) {
-            $modelo = Modelo::find($request->modelo_id);
-            if ($modelo) {
-                $data['modelo'] = $modelo->nombre;
-            } else {
-                return back()->withErrors(['modelo_id' => 'Modelo no encontrado'])->withInput();
-            }
-        } else {
-            return back()->withErrors(['modelo_id' => 'Debe seleccionar o ingresar un modelo'])->withInput();
+        if ($redirect = $this->resolveMarcaModelo($request, $data)) {
+            return $redirect;
         }
 
         if ($data['estado_pago'] === 'no_pagado') {
@@ -102,40 +77,8 @@ class PedidoController extends Controller
     {
         $data = $request->validated();
 
-        // Manejar marca personalizada o del catálogo
-        if ($request->filled('marca_otra')) {
-            $marca = Marca::firstOrCreate(
-                ['nombre' => $request->marca_otra],
-                ['es_personalizada' => true]
-            );
-            $data['marca'] = $marca->nombre;
-        } elseif ($request->filled('marca_id')) {
-            $marca = Marca::find($request->marca_id);
-            if ($marca) {
-                $data['marca'] = $marca->nombre;
-            } else {
-                return back()->withErrors(['marca_id' => 'Marca no encontrada'])->withInput();
-            }
-        } else {
-            return back()->withErrors(['marca_id' => 'Debe seleccionar o ingresar una marca'])->withInput();
-        }
-
-        // Manejar modelo personalizado o del catálogo
-        if ($request->filled('modelo_otro')) {
-            $modelo = Modelo::firstOrCreate(
-                ['marca_id' => $marca->id, 'nombre' => $request->modelo_otro],
-                ['es_personalizado' => true]
-            );
-            $data['modelo'] = $modelo->nombre;
-        } elseif ($request->filled('modelo_id')) {
-            $modelo = Modelo::find($request->modelo_id);
-            if ($modelo) {
-                $data['modelo'] = $modelo->nombre;
-            } else {
-                return back()->withErrors(['modelo_id' => 'Modelo no encontrado'])->withInput();
-            }
-        } else {
-            return back()->withErrors(['modelo_id' => 'Debe seleccionar o ingresar un modelo'])->withInput();
+        if ($redirect = $this->resolveMarcaModelo($request, $data)) {
+            return $redirect;
         }
 
         if ($data['estado_pago'] === 'no_pagado') {
@@ -152,50 +95,102 @@ class PedidoController extends Controller
         return redirect()->route('pedidos.index')->with('success', 'Pedido eliminado correctamente.');
     }
 
+    public function exportCsv(Request $request)
+    {
+        $pedidos = Pedido::query()
+            ->when($request->estado_pedido, fn($q, $v) => $q->where('estado_pedido', $v))
+            ->when($request->estado_pago,   fn($q, $v) => $q->where('estado_pago', $v))
+            ->when($request->tipo_pago,     fn($q, $v) => $q->where('tipo_pago', $v))
+            ->when($request->buscar,        fn($q, $v) => $q->where(function ($q) use ($v) {
+                $q->where('nombre', 'like', "%{$v}%")
+                  ->orWhere('apellido', 'like', "%{$v}%")
+                  ->orWhere('nombre_disenio', 'like', "%{$v}%")
+                  ->orWhere('marca', 'like', "%{$v}%")
+                  ->orWhere('modelo', 'like', "%{$v}%");
+            }))
+            ->latest()
+            ->get();
+
+        $filename = 'pedidos_' . now()->format('Y-m-d') . '.csv';
+
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ];
+
+        $callback = function () use ($pedidos) {
+            $handle = fopen('php://output', 'w');
+            // BOM para compatibilidad con Excel
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            fputcsv($handle, ['ID', 'Diseño', 'Marca', 'Modelo', 'Nombre', 'Apellido', 'Precio', 'Estado Pedido', 'Estado Pago', 'Tipo Pago', 'Fecha']);
+
+            foreach ($pedidos as $pedido) {
+                fputcsv($handle, [
+                    $pedido->id,
+                    $pedido->nombre_disenio,
+                    $pedido->marca,
+                    $pedido->modelo,
+                    $pedido->nombre,
+                    $pedido->apellido,
+                    $pedido->precio,
+                    $pedido->estado_pedido,
+                    $pedido->estado_pago,
+                    $pedido->tipo_pago ?? '',
+                    $pedido->created_at->format('d/m/Y H:i'),
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
     public function dashboard()
     {
-        // Estadísticas generales
-        $totalPedidos = Pedido::count();
-        $totalIngresos = Pedido::where('estado_pago', 'pagado')->sum('precio');
+        $totalPedidos          = Pedido::count();
+        $totalIngresos         = Pedido::where('estado_pago', 'pagado')->sum('precio');
         $pedidosPendientesPago = Pedido::where('estado_pago', 'no_pagado')->count();
-        $montoPendiente = Pedido::where('estado_pago', 'no_pagado')->sum('precio');
+        $montoPendiente        = Pedido::where('estado_pago', 'no_pagado')->sum('precio');
 
-        // Por estado de pedido
         $estadosPedido = Pedido::selectRaw('estado_pedido, COUNT(*) as cantidad, SUM(precio) as total')
             ->groupBy('estado_pedido')
             ->get();
 
-        // Por estado de pago
         $estadosPago = Pedido::selectRaw('estado_pago, COUNT(*) as cantidad, SUM(precio) as total')
             ->groupBy('estado_pago')
             ->get();
 
-        // Por tipo de pago
         $tiposPago = Pedido::selectRaw('tipo_pago, COUNT(*) as cantidad, SUM(precio) as total')
             ->whereNotNull('tipo_pago')
             ->groupBy('tipo_pago')
             ->get();
 
-        // Marcas más vendidas
         $marcasTop = Pedido::selectRaw('marca, COUNT(*) as cantidad, SUM(precio) as total')
             ->groupBy('marca')
             ->orderByDesc('cantidad')
             ->limit(5)
             ->get();
 
-        // Modelos más vendidos
         $modelosTop = Pedido::selectRaw('modelo, marca, COUNT(*) as cantidad, SUM(precio) as total')
             ->groupBy('modelo', 'marca')
             ->orderByDesc('cantidad')
             ->limit(5)
             ->get();
 
-        // Pedidos por mes (últimos 6 meses) - Compatible con PostgreSQL
-        $pedidosPorMes = Pedido::selectRaw("TO_CHAR(created_at, 'YYYY-MM') as mes, COUNT(*) as cantidad, SUM(precio) as total")
+        // Compatibilidad con cualquier motor de BD: agrupado en PHP
+        $pedidosPorMes = Pedido::select('created_at', 'precio')
             ->where('created_at', '>=', now()->subMonths(6))
-            ->groupBy('mes')
-            ->orderBy('mes')
-            ->get();
+            ->get()
+            ->groupBy(fn($p) => $p->created_at->format('Y-m'))
+            ->map(fn($group, $mes) => [
+                'mes'      => $mes,
+                'cantidad' => $group->count(),
+                'total'    => $group->sum('precio'),
+            ])
+            ->sortKeys()
+            ->values();
 
         return view('pedidos.dashboard', compact(
             'totalPedidos',
@@ -211,4 +206,46 @@ class PedidoController extends Controller
         ));
     }
 
+    private function resolveMarcaModelo(Request $request, array &$data): ?RedirectResponse
+    {
+        // Resolver marca
+        if ($request->filled('marca_otra')) {
+            $marca = Marca::firstOrCreate(
+                ['nombre' => $request->marca_otra],
+                ['es_personalizada' => true]
+            );
+            $data['marca']    = $marca->nombre;
+            $data['marca_id'] = $marca->id;
+        } elseif ($request->filled('marca_id')) {
+            $marca = Marca::find($request->marca_id);
+            if (!$marca) {
+                return back()->withErrors(['marca_id' => 'Marca no encontrada'])->withInput();
+            }
+            $data['marca']    = $marca->nombre;
+            $data['marca_id'] = $marca->id;
+        } else {
+            return back()->withErrors(['marca_id' => 'Debe seleccionar o ingresar una marca'])->withInput();
+        }
+
+        // Resolver modelo
+        if ($request->filled('modelo_otro')) {
+            $modelo = Modelo::firstOrCreate(
+                ['marca_id' => $marca->id, 'nombre' => $request->modelo_otro],
+                ['es_personalizado' => true]
+            );
+            $data['modelo']    = $modelo->nombre;
+            $data['modelo_id'] = $modelo->id;
+        } elseif ($request->filled('modelo_id')) {
+            $modelo = Modelo::find($request->modelo_id);
+            if (!$modelo) {
+                return back()->withErrors(['modelo_id' => 'Modelo no encontrado'])->withInput();
+            }
+            $data['modelo']    = $modelo->nombre;
+            $data['modelo_id'] = $modelo->id;
+        } else {
+            return back()->withErrors(['modelo_id' => 'Debe seleccionar o ingresar un modelo'])->withInput();
+        }
+
+        return null;
+    }
 }

@@ -15,10 +15,24 @@
             </svg>
             Nuevo pedido
         </a>
+        <a href="{{ route('pedidos.export') }}?{{ http_build_query(request()->only(['estado_pedido', 'estado_pago', 'tipo_pago', 'buscar'])) }}"
+           class="bg-white border-2 border-gray-300 hover:border-orange-500 hover:text-orange-600 text-gray-600 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            Exportar CSV
+        </a>
     </div>
 
     {{-- Filtros --}}
     <form method="GET" action="{{ route('pedidos.index') }}" class="bg-white rounded-xl shadow-md p-6 mb-6">
+        <div class="space-y-4">
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Buscar</label>
+            <input type="text" name="buscar" value="{{ request('buscar') }}"
+                   placeholder="Nombre, apellido, diseño, marca o modelo..."
+                   class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition">
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Estado del pedido</label>
@@ -54,6 +68,7 @@
                     Limpiar
                 </a>
             </div>
+        </div>
         </div>
     </form>
 
@@ -103,38 +118,10 @@
                     <p class="text-sm text-gray-600 font-medium">{{ $pedido->nombre }} {{ $pedido->apellido }}</p>
                 </div>
                 <div class="flex gap-2 mb-4 flex-wrap">
-                    @if($pedido->estado_pedido == 'disponible')
-                        <span class="inline-flex items-center bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">
-                            <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                            Disponible
-                        </span>
-                    @else
-                        <span class="inline-flex items-center bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
-                            <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                            Entregado
-                        </span>
-                    @endif
-                    @if($pedido->estado_pago == 'pagado')
-                        <span class="inline-flex items-center bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
-                            <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                            Pagado
-                        </span>
-                        @if($pedido->tipo_pago == 'efectivo')
-                            <span class="inline-flex items-center bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-semibold">
-                                <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
-                                Efectivo
-                            </span>
-                        @else
-                            <span class="inline-flex items-center bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-semibold">
-                                <span class="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-                                Transferencia
-                            </span>
-                        @endif
-                    @else
-                        <span class="inline-flex items-center bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-semibold">
-                            <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                            No pagado
-                        </span>
+                    <x-badge-estado-pedido :estado="$pedido->estado_pedido" />
+                    <x-badge-estado-pago :estado="$pedido->estado_pago" />
+                    @if($pedido->estado_pago === 'pagado')
+                        <x-badge-tipo-pago :tipo="$pedido->tipo_pago" />
                     @endif
                 </div>
                 <div class="flex gap-2 border-t border-gray-100 pt-3">
@@ -165,6 +152,11 @@
                 <p class="text-gray-400 font-medium">No hay pedidos cargados</p>
             </div>
         @endforelse
+        @if($pedidos->hasPages())
+            <div class="pt-4">
+                {{ $pedidos->links() }}
+            </div>
+        @endif
     </div>
 
     {{-- Vista desktop: tabla --}}
@@ -194,47 +186,13 @@
                     <td class="px-6 py-4 text-gray-600">{{ $pedido->nombre }} {{ $pedido->apellido }}</td>
                     <td class="px-6 py-4 text-gray-900 font-bold">${{ number_format($pedido->precio, 2, ',', '.') }}</td>
                     <td class="px-6 py-4">
-                        @if($pedido->estado_pedido == 'disponible')
-                            <span class="inline-flex items-center bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full text-xs font-semibold">
-                                <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                                Disponible
-                            </span>
-                        @else
-                            <span class="inline-flex items-center bg-green-100 text-green-700 px-3 py-1.5 rounded-full text-xs font-semibold">
-                                <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                                Entregado
-                            </span>
-                        @endif
+                        <x-badge-estado-pedido :estado="$pedido->estado_pedido" />
                     </td>
                     <td class="px-6 py-4">
-                        @if($pedido->estado_pago == 'pagado')
-                            <span class="inline-flex items-center bg-green-100 text-green-700 px-3 py-1.5 rounded-full text-xs font-semibold">
-                                <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                                Pagado
-                            </span>
-                        @else
-                            <span class="inline-flex items-center bg-red-100 text-red-700 px-3 py-1.5 rounded-full text-xs font-semibold">
-                                <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                                No pagado
-                            </span>
-                        @endif
+                        <x-badge-estado-pago :estado="$pedido->estado_pago" />
                     </td>
                     <td class="px-6 py-4">
-                        @if($pedido->estado_pago == 'pagado')
-                            @if($pedido->tipo_pago == 'efectivo')
-                                <span class="inline-flex items-center bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-full text-xs font-semibold">
-                                    <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
-                                    Efectivo
-                                </span>
-                            @else
-                                <span class="inline-flex items-center bg-purple-100 text-purple-700 px-3 py-1.5 rounded-full text-xs font-semibold">
-                                    <span class="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-                                    Transferencia
-                                </span>
-                            @endif
-                        @else
-                            <span class="text-gray-300 text-xs font-medium">—</span>
-                        @endif
+                        <x-badge-tipo-pago :tipo="$pedido->tipo_pago" />
                     </td>
                     <td class="px-6 py-4">
                         <div class="flex gap-2">

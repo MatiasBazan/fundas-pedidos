@@ -11,6 +11,7 @@ Route::get('/', function () {
 Route::middleware('auth')->group(function () {
     // IMPORTANTE: Rutas específicas ANTES de resource
     Route::get('/pedidos/dashboard', [PedidoController::class, 'dashboard'])->name('pedidos.dashboard');
+    Route::get('/pedidos/export', [PedidoController::class, 'exportCsv'])->name('pedidos.export');
     Route::get('/api/modelos/{marca}', [PedidoController::class, 'getModelos']);
 
     // Ahora sí la ruta resource

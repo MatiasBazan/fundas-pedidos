@@ -119,17 +119,7 @@
                     @foreach($estadosPedido as $estado)
                         <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                             <td class="px-4 py-4">
-                                @if($estado->estado_pedido === 'disponible')
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-                                        <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                                        Disponible
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                                        <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                                        Entregado
-                                    </span>
-                                @endif
+                                <x-badge-estado-pedido :estado="$estado->estado_pedido" />
                             </td>
                             <td class="px-4 py-4 font-semibold text-gray-900">{{ $estado->cantidad }}</td>
                             <td class="px-4 py-4 font-semibold text-gray-900">${{ number_format($estado->total, 2, ',', '.') }}</td>
@@ -161,17 +151,7 @@
                     @foreach($estadosPago as $estado)
                         <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                             <td class="px-4 py-4">
-                                @if($estado->estado_pago === 'pagado')
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                                        <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                                        Pagado
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
-                                        <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                                        No Pagado
-                                    </span>
-                                @endif
+                                <x-badge-estado-pago :estado="$estado->estado_pago" />
                             </td>
                             <td class="px-4 py-4 font-semibold text-gray-900">{{ $estado->cantidad }}</td>
                             <td class="px-4 py-4 font-semibold text-gray-900">${{ number_format($estado->total, 2, ',', '.') }}</td>
@@ -206,17 +186,7 @@
                     @forelse($tiposPago as $tipo)
                         <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                             <td class="px-4 py-4">
-                                @if($tipo->tipo_pago === 'efectivo')
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
-                                        <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
-                                        Efectivo
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
-                                        <span class="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-                                        Transferencia
-                                    </span>
-                                @endif
+                                <x-badge-tipo-pago :tipo="$tipo->tipo_pago" />
                             </td>
                             <td class="px-4 py-4 font-semibold text-gray-900">{{ $tipo->cantidad }}</td>
                             <td class="px-4 py-4 font-semibold text-gray-900">${{ number_format($tipo->total, 2, ',', '.') }}</td>

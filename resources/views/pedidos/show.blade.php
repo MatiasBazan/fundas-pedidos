@@ -90,48 +90,18 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <p class="text-xs text-gray-500 uppercase font-semibold mb-2">Estado del pedido</p>
-                        @if($pedido->estado_pedido == 'disponible')
-                            <span class="inline-flex items-center bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full text-sm font-semibold">
-                                <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                                Disponible
-                            </span>
-                        @else
-                            <span class="inline-flex items-center bg-green-100 text-green-700 px-3 py-1.5 rounded-full text-sm font-semibold">
-                                <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                                Entregado
-                            </span>
-                        @endif
+                        <x-badge-estado-pedido :estado="$pedido->estado_pedido" size="sm" />
                     </div>
 
                     <div>
                         <p class="text-xs text-gray-500 uppercase font-semibold mb-2">Estado de pago</p>
-                        @if($pedido->estado_pago == 'pagado')
-                            <span class="inline-flex items-center bg-green-100 text-green-700 px-3 py-1.5 rounded-full text-sm font-semibold">
-                                <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                                Pagado
-                            </span>
-                        @else
-                            <span class="inline-flex items-center bg-red-100 text-red-700 px-3 py-1.5 rounded-full text-sm font-semibold">
-                                <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                                No pagado
-                            </span>
-                        @endif
+                        <x-badge-estado-pago :estado="$pedido->estado_pago" size="sm" />
                     </div>
 
                     @if($pedido->estado_pago == 'pagado')
                         <div>
                             <p class="text-xs text-gray-500 uppercase font-semibold mb-2">Tipo de pago</p>
-                            @if($pedido->tipo_pago == 'efectivo')
-                                <span class="inline-flex items-center bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-full text-sm font-semibold">
-                                    <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
-                                    Efectivo
-                                </span>
-                            @else
-                                <span class="inline-flex items-center bg-purple-100 text-purple-700 px-3 py-1.5 rounded-full text-sm font-semibold">
-                                    <span class="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-                                    Transferencia
-                                </span>
-                            @endif
+                            <x-badge-tipo-pago :tipo="$pedido->tipo_pago" size="sm" />
                         </div>
                     @endif
                 </div>
