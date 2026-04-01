@@ -14,6 +14,7 @@ class AdminSeeder extends Seeder
             ['email' => 'admin@dfcases.com'],
             [
                 'name'     => 'Admin',
+                'role'     => 'admin',
                 'password' => Hash::make('df2024admin'),
             ]
         );

@@ -32,6 +32,12 @@
                    class="px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 {{ request()->routeIs('pedidos.dashboard') ? 'bg-white text-orange-500 shadow-md' : 'text-white hover:bg-white/20' }}">
                     Estadísticas
                 </a>
+                @if(Auth::user()->isAdmin())
+                <a href="{{ route('users.index') }}"
+                   class="px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 {{ request()->routeIs('users.*') ? 'bg-white text-orange-500 shadow-md' : 'text-white hover:bg-white/20' }}">
+                    Usuarios
+                </a>
+                @endif
                 <form method="POST" action="{{ route('logout') }}" class="ml-2">
                     @csrf
                     <button type="submit"
@@ -46,6 +52,26 @@
         </div>
     </div>
 </nav>
+
+@if(session('impersonating_admin_id'))
+<div class="bg-blue-600 text-white text-sm py-2 px-6">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <span>
+            <svg class="w-4 h-4 inline mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+            Estás viendo la app como <strong>{{ Auth::user()->name }}</strong>
+        </span>
+        <form method="POST" action="{{ route('impersonate.stop') }}">
+            @csrf
+            <button type="submit" class="bg-white text-blue-600 font-semibold text-xs px-3 py-1 rounded-lg hover:bg-blue-50 transition">
+                Volver a mi cuenta
+            </button>
+        </form>
+    </div>
+</div>
+@endif
 
 <!-- Contenido -->
 <main class="max-w-7xl mx-auto px-6 py-8">

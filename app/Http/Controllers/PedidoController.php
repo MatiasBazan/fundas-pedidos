@@ -14,6 +14,7 @@ class PedidoController extends Controller
     public function index(Request $request)
     {
         $query = Pedido::query()
+            ->where('user_id', auth()->id())
             ->when($request->estado_pedido, fn($q, $v) => $q->where('estado_pedido', $v))
             ->when($request->estado_pago,   fn($q, $v) => $q->where('estado_pago', $v))
             ->when($request->tipo_pago,     fn($q, $v) => $q->where('tipo_pago', $v))
@@ -58,23 +59,27 @@ class PedidoController extends Controller
             $data['tipo_pago'] = null;
         }
 
+        $data['user_id'] = auth()->id();
         Pedido::create($data);
         return redirect()->route('pedidos.index')->with('success', 'Pedido cargado correctamente.');
     }
 
     public function show(Pedido $pedido)
     {
+        abort_if($pedido->user_id !== auth()->id(), 403);
         return view('pedidos.show', compact('pedido'));
     }
 
     public function edit(Pedido $pedido)
     {
+        abort_if($pedido->user_id !== auth()->id(), 403);
         $marcas = Marca::orderBy('nombre')->get();
         return view('pedidos.edit', compact('pedido', 'marcas'));
     }
 
     public function update(PedidoRequest $request, Pedido $pedido)
     {
+        abort_if($pedido->user_id !== auth()->id(), 403);
         $data = $request->validated();
 
         if ($redirect = $this->resolveMarcaModelo($request, $data)) {
@@ -91,6 +96,7 @@ class PedidoController extends Controller
 
     public function destroy(Pedido $pedido)
     {
+        abort_if($pedido->user_id !== auth()->id(), 403);
         $pedido->delete();
         return redirect()->route('pedidos.index')->with('success', 'Pedido eliminado correctamente.');
     }
@@ -98,6 +104,7 @@ class PedidoController extends Controller
     public function exportCsv(Request $request)
     {
         $pedidos = Pedido::query()
+            ->where('user_id', auth()->id())
             ->when($request->estado_pedido, fn($q, $v) => $q->where('estado_pedido', $v))
             ->when($request->estado_pago,   fn($q, $v) => $q->where('estado_pago', $v))
             ->when($request->tipo_pago,     fn($q, $v) => $q->where('tipo_pago', $v))
@@ -149,31 +156,38 @@ class PedidoController extends Controller
 
     public function dashboard()
     {
-        $totalPedidos          = Pedido::count();
-        $totalIngresos         = Pedido::where('estado_pago', 'pagado')->sum('precio');
-        $pedidosPendientesPago = Pedido::where('estado_pago', 'no_pagado')->count();
-        $montoPendiente        = Pedido::where('estado_pago', 'no_pagado')->sum('precio');
+        $userId = auth()->id();
+
+        $totalPedidos          = Pedido::where('user_id', $userId)->count();
+        $totalIngresos         = Pedido::where('user_id', $userId)->where('estado_pago', 'pagado')->sum('precio');
+        $pedidosPendientesPago = Pedido::where('user_id', $userId)->where('estado_pago', 'no_pagado')->count();
+        $montoPendiente        = Pedido::where('user_id', $userId)->where('estado_pago', 'no_pagado')->sum('precio');
 
         $estadosPedido = Pedido::selectRaw('estado_pedido, COUNT(*) as cantidad, SUM(precio) as total')
+            ->where('user_id', $userId)
             ->groupBy('estado_pedido')
             ->get();
 
         $estadosPago = Pedido::selectRaw('estado_pago, COUNT(*) as cantidad, SUM(precio) as total')
+            ->where('user_id', $userId)
             ->groupBy('estado_pago')
             ->get();
 
         $tiposPago = Pedido::selectRaw('tipo_pago, COUNT(*) as cantidad, SUM(precio) as total')
+            ->where('user_id', $userId)
             ->whereNotNull('tipo_pago')
             ->groupBy('tipo_pago')
             ->get();
 
         $marcasTop = Pedido::selectRaw('marca, COUNT(*) as cantidad, SUM(precio) as total')
+            ->where('user_id', $userId)
             ->groupBy('marca')
             ->orderByDesc('cantidad')
             ->limit(5)
             ->get();
 
         $modelosTop = Pedido::selectRaw('modelo, marca, COUNT(*) as cantidad, SUM(precio) as total')
+            ->where('user_id', $userId)
             ->groupBy('modelo', 'marca')
             ->orderByDesc('cantidad')
             ->limit(5)
@@ -181,6 +195,7 @@ class PedidoController extends Controller
 
         // Compatibilidad con cualquier motor de BD: agrupado en PHP
         $pedidosPorMes = Pedido::select('created_at', 'precio')
+            ->where('user_id', $userId)
             ->where('created_at', '>=', now()->subMonths(6))
             ->get()
             ->groupBy(fn($p) => $p->created_at->format('Y-m'))

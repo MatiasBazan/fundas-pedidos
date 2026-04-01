@@ -4,12 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\User;
 
 class Pedido extends Model
 {
     use SoftDeletes;
 
     protected $fillable = [
+        'user_id',
         'nombre_disenio',
         'marca',
         'modelo',
@@ -22,6 +24,11 @@ class Pedido extends Model
         'estado_pago',
         'tipo_pago',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function marcaRelacion()
     {
