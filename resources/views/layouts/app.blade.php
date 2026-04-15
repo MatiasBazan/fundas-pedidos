@@ -28,8 +28,16 @@
                    class="px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 {{ request()->routeIs('pedidos.index') ? 'bg-white text-orange-500 shadow-md' : 'text-white hover:bg-white/20' }}">
                     Pedidos
                 </a>
-                <a href="{{ route('pedidos.dashboard') }}"
-                   class="px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 {{ request()->routeIs('pedidos.dashboard') ? 'bg-white text-orange-500 shadow-md' : 'text-white hover:bg-white/20' }}">
+                <a href="{{ route('compras.index') }}"
+                   class="px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 {{ request()->routeIs('compras.*') ? 'bg-white text-orange-500 shadow-md' : 'text-white hover:bg-white/20' }}">
+                    Compras
+                </a>
+                <a href="{{ route('stock.index') }}"
+                   class="px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 {{ request()->routeIs('stock.*') ? 'bg-white text-orange-500 shadow-md' : 'text-white hover:bg-white/20' }}">
+                    Stock
+                </a>
+                <a href="{{ route('stats.index') }}"
+                   class="px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 {{ request()->routeIs('stats.*') ? 'bg-white text-orange-500 shadow-md' : 'text-white hover:bg-white/20' }}">
                     Estadísticas
                 </a>
                 @if(Auth::user()->isAdmin())

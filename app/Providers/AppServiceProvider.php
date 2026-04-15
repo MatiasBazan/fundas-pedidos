@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Compra;
+use App\Models\Pedido;
+use App\Observers\CompraObserver;
+use App\Observers\PedidoObserver;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
 
@@ -24,5 +28,8 @@ class AppServiceProvider extends ServiceProvider
         if (str_starts_with(config('app.url'), 'https://')) {
             URL::forceScheme('https');
         }
+
+        Compra::observe(CompraObserver::class);
+        Pedido::observe(PedidoObserver::class);
     }
 }

@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\CompraController;
 use App\Http\Controllers\ImpersonateController;
 use App\Http\Controllers\PedidoController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StatsController;
+use App\Http\Controllers\StockController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,6 +21,12 @@ Route::middleware('auth')->group(function () {
 
     // Ahora sí la ruta resource
     Route::resource('pedidos', PedidoController::class);
+
+    Route::resource('compras', CompraController::class);
+
+    Route::get('/stock', [StockController::class, 'index'])->name('stock.index');
+
+    Route::get('/estadisticas', [StatsController::class, 'index'])->name('stats.index');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
