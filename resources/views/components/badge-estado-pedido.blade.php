@@ -1,13 +1,13 @@
 @props(['estado', 'size' => 'xs'])
 
 @if($estado === 'disponible')
-    <span class="inline-flex items-center bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full text-{{ $size }} font-semibold">
-        <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+    <span class="inline-flex items-center gap-1.5 bg-sky-50 text-sky-700 border border-sky-200 px-2.5 py-1 rounded-full text-{{ $size }} font-semibold">
+        <span class="w-1.5 h-1.5 bg-sky-500 rounded-full"></span>
         Disponible
     </span>
 @else
-    <span class="inline-flex items-center bg-green-100 text-green-700 px-3 py-1.5 rounded-full text-{{ $size }} font-semibold">
-        <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+    <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full text-{{ $size }} font-semibold">
+        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
         Entregado
     </span>
 @endif

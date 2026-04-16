@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Compra;
+use App\Models\CompraItem;
 use App\Models\Pedido;
 use Illuminate\Support\Carbon;
 
@@ -19,7 +20,7 @@ class StatsController extends Controller
             ->whereBetween('created_at', [$mesInicio, $mesFin])
             ->sum('precio');
 
-        $totalComprado = Compra::whereBetween('created_at', [$mesInicio, $mesFin])
+        $totalComprado = CompraItem::whereHas('compra', fn($q) => $q->whereBetween('created_at', [$mesInicio, $mesFin]))
             ->sum('precio_total');
 
         $ganancia = $totalVendido - $totalComprado;
@@ -52,10 +53,10 @@ class StatsController extends Controller
             ->values();
 
         // --- Compras por mes (últimos 6 meses) ---
-        $comprasPorMes = Compra::select('created_at', 'precio_total')
-            ->where('created_at', '>=', now()->subMonths(5)->startOfMonth())
+        $comprasPorMes = CompraItem::whereHas('compra', fn($q) => $q->where('created_at', '>=', now()->subMonths(5)->startOfMonth()))
+            ->with('compra:id,created_at')
             ->get()
-            ->groupBy(fn($c) => $c->created_at->format('Y-m'))
+            ->groupBy(fn($item) => $item->compra->created_at->format('Y-m'))
             ->map(fn($group, $mes) => [
                 'mes'   => Carbon::createFromFormat('Y-m', $mes)->translatedFormat('M Y'),
                 'total' => round($group->sum('precio_total'), 2),

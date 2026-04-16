@@ -205,7 +205,7 @@
         <div class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200">
             <div class="p-6 border-b border-gray-100">
                 <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-                    <span class="w-2 h-2 bg-orange-500 rounded-full"></span>
+                    <span class="w-2 h-2 bg-[#FF2D6B] rounded-full"></span>
                     Top 5 Marcas
                 </h3>
             </div>
@@ -223,7 +223,7 @@
                         <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                             <td class="px-4 py-4">
                                 <div class="flex items-center gap-3">
-                                    <span class="flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 text-orange-600 text-xs font-bold">
+                                    <span class="flex items-center justify-center w-6 h-6 rounded-full bg-[#FFD6E5] text-[#FF2D6B] text-xs font-bold">
                                         {{ $index + 1 }}
                                     </span>
                                     <span class="font-semibold text-gray-900">{{ $marca->marca }}</span>

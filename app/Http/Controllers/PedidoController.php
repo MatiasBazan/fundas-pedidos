@@ -3,30 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pedido;
-use App\Models\Marca;
-use App\Models\Modelo;
+use App\Models\Stock;
 use App\Http\Requests\PedidoRequest;
 use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
 
 class PedidoController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pedido::query()
-            ->where('user_id', auth()->id())
-            ->when($request->estado_pedido, fn($q, $v) => $q->where('estado_pedido', $v))
-            ->when($request->estado_pago,   fn($q, $v) => $q->where('estado_pago', $v))
-            ->when($request->tipo_pago,     fn($q, $v) => $q->where('tipo_pago', $v))
-            ->when($request->buscar,        fn($q, $v) => $q->where(function ($q) use ($v) {
-                $q->where('nombre', 'like', "%{$v}%")
-                  ->orWhere('apellido', 'like', "%{$v}%")
-                  ->orWhere('nombre_disenio', 'like', "%{$v}%")
-                  ->orWhere('marca', 'like', "%{$v}%")
-                  ->orWhere('modelo', 'like', "%{$v}%");
-            }));
+        $query = $this->applyFilters(Pedido::query(), $request);
 
-        $total = $query->sum('precio');
+        $total   = $query->sum('precio');
         $pedidos = $query->latest()->paginate(20)->withQueryString();
 
         return view('pedidos.index', compact('pedidos', 'total'));
@@ -34,26 +21,25 @@ class PedidoController extends Controller
 
     public function create()
     {
-        $marcas = Marca::orderBy('nombre')->get();
-        return view('pedidos.create', compact('marcas'));
-    }
-
-    public function getModelos($marcaId)
-    {
-        $modelos = Modelo::where('marca_id', $marcaId)
-            ->orderBy('nombre')
-            ->get();
-
-        return response()->json($modelos);
+        $stockDisponible = Stock::where('cantidad', '>', 0)->orderBy('modelo_celular')->get();
+        return view('pedidos.create', compact('stockDisponible'));
     }
 
     public function store(PedidoRequest $request)
     {
         $data = $request->validated();
 
-        if ($redirect = $this->resolveMarcaModelo($request, $data)) {
-            return $redirect;
+        $stock = Stock::findOrFail($data['stock_id']);
+
+        if ($stock->cantidad < 1) {
+            return back()->withErrors(['stock_id' => 'No hay unidades disponibles de este producto.'])->withInput();
         }
+
+        $data['nombre_disenio'] = $stock->nombre_disenio;
+        $data['marca']          = $stock->modelo_celular;
+        $data['modelo']         = '';
+        $data['marca_id']       = null;
+        $data['modelo_id']      = null;
 
         if ($data['estado_pago'] === 'no_pagado') {
             $data['tipo_pago'] = null;
@@ -61,6 +47,8 @@ class PedidoController extends Controller
 
         $data['user_id'] = auth()->id();
         Pedido::create($data);
+        $stock->decrement('cantidad');
+
         return redirect()->route('pedidos.index')->with('success', 'Pedido cargado correctamente.');
     }
 
@@ -73,18 +61,40 @@ class PedidoController extends Controller
     public function edit(Pedido $pedido)
     {
         abort_if($pedido->user_id !== auth()->id(), 403);
-        $marcas = Marca::orderBy('nombre')->get();
-        return view('pedidos.edit', compact('pedido', 'marcas'));
+
+        $stockDisponible = Stock::where('cantidad', '>', 0)
+            ->when($pedido->stock_id, fn($q) => $q->orWhere('id', $pedido->stock_id))
+            ->orderBy('modelo_celular')
+            ->get();
+
+        return view('pedidos.edit', compact('pedido', 'stockDisponible'));
     }
 
     public function update(PedidoRequest $request, Pedido $pedido)
     {
         abort_if($pedido->user_id !== auth()->id(), 403);
-        $data = $request->validated();
 
-        if ($redirect = $this->resolveMarcaModelo($request, $data)) {
-            return $redirect;
+        $data = $request->validated();
+        $newStockId = (int) $data['stock_id'];
+        $oldStockId = $pedido->stock_id;
+
+        $newStock = Stock::findOrFail($newStockId);
+
+        if ($oldStockId !== $newStockId) {
+            if ($newStock->cantidad < 1) {
+                return back()->withErrors(['stock_id' => 'No hay unidades disponibles de este producto.'])->withInput();
+            }
+            if ($oldStockId) {
+                Stock::find($oldStockId)?->increment('cantidad');
+            }
+            $newStock->decrement('cantidad');
         }
+
+        $data['nombre_disenio'] = $newStock->nombre_disenio;
+        $data['marca']          = $newStock->modelo_celular;
+        $data['modelo']         = '';
+        $data['marca_id']       = null;
+        $data['modelo_id']      = null;
 
         if ($data['estado_pago'] === 'no_pagado') {
             $data['tipo_pago'] = null;
@@ -97,26 +107,18 @@ class PedidoController extends Controller
     public function destroy(Pedido $pedido)
     {
         abort_if($pedido->user_id !== auth()->id(), 403);
+
+        if ($pedido->stock_id) {
+            Stock::find($pedido->stock_id)?->increment('cantidad');
+        }
+
         $pedido->delete();
         return redirect()->route('pedidos.index')->with('success', 'Pedido eliminado correctamente.');
     }
 
     public function exportCsv(Request $request)
     {
-        $pedidos = Pedido::query()
-            ->where('user_id', auth()->id())
-            ->when($request->estado_pedido, fn($q, $v) => $q->where('estado_pedido', $v))
-            ->when($request->estado_pago,   fn($q, $v) => $q->where('estado_pago', $v))
-            ->when($request->tipo_pago,     fn($q, $v) => $q->where('tipo_pago', $v))
-            ->when($request->buscar,        fn($q, $v) => $q->where(function ($q) use ($v) {
-                $q->where('nombre', 'like', "%{$v}%")
-                  ->orWhere('apellido', 'like', "%{$v}%")
-                  ->orWhere('nombre_disenio', 'like', "%{$v}%")
-                  ->orWhere('marca', 'like', "%{$v}%")
-                  ->orWhere('modelo', 'like', "%{$v}%");
-            }))
-            ->latest()
-            ->get();
+        $pedidos = $this->applyFilters(Pedido::query(), $request)->latest()->get();
 
         $filename = 'pedidos_' . now()->format('Y-m-d') . '.csv';
 
@@ -127,17 +129,15 @@ class PedidoController extends Controller
 
         $callback = function () use ($pedidos) {
             $handle = fopen('php://output', 'w');
-            // BOM para compatibilidad con Excel
             fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-            fputcsv($handle, ['ID', 'Diseño', 'Marca', 'Modelo', 'Nombre', 'Apellido', 'Precio', 'Estado Pedido', 'Estado Pago', 'Tipo Pago', 'Fecha']);
+            fputcsv($handle, ['ID', 'Producto', 'Diseño', 'Nombre', 'Apellido', 'Precio', 'Estado Pedido', 'Estado Pago', 'Tipo Pago', 'Fecha']);
 
             foreach ($pedidos as $pedido) {
                 fputcsv($handle, [
                     $pedido->id,
-                    $pedido->nombre_disenio,
                     $pedido->marca,
-                    $pedido->modelo,
+                    $pedido->nombre_disenio,
                     $pedido->nombre,
                     $pedido->apellido,
                     $pedido->precio,
@@ -152,6 +152,22 @@ class PedidoController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    private function applyFilters(\Illuminate\Database\Eloquent\Builder $query, Request $request): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query
+            ->where('user_id', auth()->id())
+            ->when($request->estado_pedido, fn($q, $v) => $q->where('estado_pedido', $v))
+            ->when($request->estado_pago,   fn($q, $v) => $q->where('estado_pago', $v))
+            ->when($request->tipo_pago,     fn($q, $v) => $q->where('tipo_pago', $v))
+            ->when($request->buscar,        fn($q, $v) => $q->where(function ($q) use ($v) {
+                $q->where('nombre', 'like', "%{$v}%")
+                  ->orWhere('apellido', 'like', "%{$v}%")
+                  ->orWhere('nombre_disenio', 'like', "%{$v}%")
+                  ->orWhere('marca', 'like', "%{$v}%")
+                  ->orWhere('modelo', 'like', "%{$v}%");
+            }));
     }
 
     public function dashboard()
@@ -193,7 +209,6 @@ class PedidoController extends Controller
             ->limit(5)
             ->get();
 
-        // Compatibilidad con cualquier motor de BD: agrupado en PHP
         $pedidosPorMes = Pedido::select('created_at', 'precio')
             ->where('user_id', $userId)
             ->where('created_at', '>=', now()->subMonths(6))
@@ -219,48 +234,5 @@ class PedidoController extends Controller
             'modelosTop',
             'pedidosPorMes'
         ));
-    }
-
-    private function resolveMarcaModelo(Request $request, array &$data): ?RedirectResponse
-    {
-        // Resolver marca
-        if ($request->filled('marca_otra')) {
-            $marca = Marca::firstOrCreate(
-                ['nombre' => $request->marca_otra],
-                ['es_personalizada' => true]
-            );
-            $data['marca']    = $marca->nombre;
-            $data['marca_id'] = $marca->id;
-        } elseif ($request->filled('marca_id')) {
-            $marca = Marca::find($request->marca_id);
-            if (!$marca) {
-                return back()->withErrors(['marca_id' => 'Marca no encontrada'])->withInput();
-            }
-            $data['marca']    = $marca->nombre;
-            $data['marca_id'] = $marca->id;
-        } else {
-            return back()->withErrors(['marca_id' => 'Debe seleccionar o ingresar una marca'])->withInput();
-        }
-
-        // Resolver modelo
-        if ($request->filled('modelo_otro')) {
-            $modelo = Modelo::firstOrCreate(
-                ['marca_id' => $marca->id, 'nombre' => $request->modelo_otro],
-                ['es_personalizado' => true]
-            );
-            $data['modelo']    = $modelo->nombre;
-            $data['modelo_id'] = $modelo->id;
-        } elseif ($request->filled('modelo_id')) {
-            $modelo = Modelo::find($request->modelo_id);
-            if (!$modelo) {
-                return back()->withErrors(['modelo_id' => 'Modelo no encontrado'])->withInput();
-            }
-            $data['modelo']    = $modelo->nombre;
-            $data['modelo_id'] = $modelo->id;
-        } else {
-            return back()->withErrors(['modelo_id' => 'Debe seleccionar o ingresar un modelo'])->withInput();
-        }
-
-        return null;
     }
 }

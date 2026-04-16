@@ -2,113 +2,221 @@
 
 @section('content')
 
-    <div class="mb-8">
-        <div class="flex items-center gap-3">
-            <a href="{{ route('compras.index') }}" class="text-gray-400 hover:text-orange-500 transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                </svg>
-            </a>
+<div class="mb-6">
+    <a href="{{ route('compras.index') }}" class="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#FF2D6B] transition-colors mb-3">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Volver a Compras
+    </a>
+    <h1 class="text-2xl font-bold text-gray-900">Editar compra <span class="text-gray-400 font-normal">#{{ $compra->id }}</span></h1>
+    <p class="text-sm text-gray-500 mt-0.5">{{ $compra->items->count() }} {{ Str::plural('item', $compra->items->count()) }} · {{ $compra->fecha->format('d/m/Y') }}</p>
+</div>
+
+<div x-data="compraEditForm">
+
+<form method="POST" action="{{ route('compras.update', $compra) }}" class="space-y-5">
+    @csrf
+    @method('PUT')
+
+    {{-- Datos generales --}}
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2 mb-4">
+            <span class="w-1 h-4 bg-[#FF2D6B] rounded-full"></span>
+            Datos generales
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800">Editar compra #{{ $compra->id }}</h1>
-                <p class="text-gray-600 mt-1">{{ $compra->nombre_disenio }} — {{ $compra->modelo_celular }}</p>
+                <label class="block text-sm font-medium text-gray-600 mb-1.5">Fecha <span class="text-red-400">*</span></label>
+                <input type="date" name="fecha" value="{{ old('fecha', $compra->fecha->format('Y-m-d')) }}"
+                       class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all @error('fecha') border-red-300 bg-red-50 @enderror">
+                @error('fecha') <p class="text-red-500 text-xs mt-1.5">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1.5">Observaciones</label>
+                <input type="text" name="observaciones" value="{{ old('observaciones', $compra->observaciones) }}" placeholder="Notas adicionales..."
+                       class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all">
             </div>
         </div>
     </div>
 
-    <div class="max-w-2xl">
-        <form method="POST" action="{{ route('compras.update', $compra) }}" class="bg-white rounded-xl shadow-md p-8 space-y-6">
-            @csrf
-            @method('PUT')
+    {{-- Items --}}
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+        <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+            <span class="w-1 h-4 bg-[#FF2D6B] rounded-full"></span>
+            Items
+        </h2>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Modelo de celular <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="modelo_celular" value="{{ old('modelo_celular', $compra->modelo_celular) }}"
-                           class="w-full border @error('modelo_celular') border-red-400 @else border-gray-300 @enderror rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition">
-                    @error('modelo_celular')
-                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
+        @error('items') <p class="text-red-500 text-xs">{{ $message }}</p> @enderror
+
+        <template x-for="(item, index) in items" :key="index">
+            <div class="border border-gray-100 rounded-xl p-4 space-y-3 bg-gray-50/40">
+
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wide" x-text="'Item ' + (index + 1)"></span>
+                    <button type="button" @click="removeItem(index)" x-show="items.length > 1"
+                            class="text-xs text-red-400 hover:text-red-600 hover:bg-red-50 px-2 py-1 rounded-lg transition-colors flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        Quitar
+                    </button>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Nombre de diseño <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="nombre_disenio" value="{{ old('nombre_disenio', $compra->nombre_disenio) }}"
-                           class="w-full border @error('nombre_disenio') border-red-400 @else border-gray-300 @enderror rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition">
-                    @error('nombre_disenio')
-                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Cantidad <span class="text-red-500">*</span>
-                    </label>
-                    <input type="number" name="cantidad" value="{{ old('cantidad', $compra->cantidad) }}"
-                           min="1"
-                           class="w-full border @error('cantidad') border-red-400 @else border-gray-300 @enderror rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition"
-                           x-model="cantidad">
-                    @error('cantidad')
-                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Precio unitario <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium text-sm">$</span>
-                        <input type="number" name="precio_unitario" value="{{ old('precio_unitario', $compra->precio_unitario) }}"
-                               min="0" step="0.01"
-                               class="w-full border @error('precio_unitario') border-red-400 @else border-gray-300 @enderror rounded-lg pl-7 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition"
-                               x-model="precioUnitario">
+                {{-- Marca / Modelo / Diseño --}}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Marca <span class="text-red-400">*</span></label>
+                        <select x-effect="$el.value = item.showNuevaMarca ? 'nueva' : (item.marcaId || '')"
+                                @change="onMarcaChange(item, $event.target.value)"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all bg-white">
+                            <option value="">Seleccioná una marca</option>
+                            @foreach($marcas as $marca)
+                                <option value="{{ $marca->id }}">{{ $marca->nombre }}</option>
+                            @endforeach
+                            <option value="nueva">＋ Nueva marca</option>
+                        </select>
+                        <div x-show="item.showNuevaMarca" x-transition class="mt-1.5">
+                            <input type="text" :name="'items[' + index + '][marca_nueva]'" x-model="item.marcaNueva"
+                                   placeholder="Nombre de la marca"
+                                   class="w-full border border-[#FF8FAB] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] bg-[#FFF0F5]/30 transition-all">
+                        </div>
+                        <input type="hidden" :name="'items[' + index + '][marca_id]'" :value="item.showNuevaMarca ? '' : item.marcaId">
                     </div>
-                    @error('precio_unitario')
-                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-            </div>
 
-            <div x-data="{ cantidad: '{{ old('cantidad', $compra->cantidad) }}', precioUnitario: '{{ old('precio_unitario', $compra->precio_unitario) }}', get total() { return (parseFloat(this.cantidad) || 0) * (parseFloat(this.precioUnitario) || 0); } }">
-                <div class="bg-orange-50 border-2 border-orange-200 rounded-xl px-6 py-4 flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"></path>
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"></path>
-                        </svg>
-                        <span class="text-sm font-semibold text-orange-800">Precio total (calculado automáticamente)</span>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Modelo <span class="text-red-400">*</span></label>
+                        <select x-effect="$el.value = item.showNuevoModelo ? 'nuevo' : (item.modeloId || '')"
+                                @change="onModeloChange(item, $event.target.value)"
+                                :disabled="modelosFiltrados(item).length === 0 && !item.showNuevaMarca"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all bg-white disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed">
+                            <option value="" x-text="(item.marcaId || item.showNuevaMarca) ? 'Seleccioná un modelo' : 'Primero seleccioná marca'"></option>
+                            <template x-for="m in modelosFiltrados(item)" :key="m.id">
+                                <option :value="m.id" x-text="m.nombre"></option>
+                            </template>
+                            <template x-if="item.marcaId || item.showNuevaMarca">
+                                <option value="nuevo">＋ Nuevo modelo</option>
+                            </template>
+                        </select>
+                        <div x-show="item.showNuevoModelo" x-transition class="mt-1.5">
+                            <input type="text" :name="'items[' + index + '][modelo_nuevo]'" x-model="item.modeloNuevo"
+                                   placeholder="Nombre del modelo"
+                                   class="w-full border border-[#FF8FAB] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] bg-[#FFF0F5]/30 transition-all">
+                        </div>
+                        <input type="hidden" :name="'items[' + index + '][modelo_id]'" :value="item.showNuevoModelo ? '' : item.modeloId">
                     </div>
-                    <span class="text-2xl font-bold text-orange-700" x-text="'$' + total.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})">$0,00</span>
+
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Diseño <span class="text-red-400">*</span></label>
+                        <input type="text" :name="'items[' + index + '][nombre_disenio]'" x-model="item.nombreDisenio"
+                               placeholder="Ej: Flores rosas"
+                               class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all">
+                    </div>
                 </div>
-            </div>
 
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Observaciones</label>
-                <textarea name="observaciones" rows="3"
-                          class="w-full border @error('observaciones') border-red-400 @else border-gray-300 @enderror rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition resize-none">{{ old('observaciones', $compra->observaciones) }}</textarea>
-                @error('observaciones')
-                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
+                {{-- Cantidad / Precio / Subtotal --}}
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Cantidad <span class="text-red-400">*</span></label>
+                        <input type="number" :name="'items[' + index + '][cantidad]'" x-model="item.cantidad"
+                               min="1" placeholder="0"
+                               class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Precio unitario <span class="text-red-400">*</span></label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
+                            <input type="number" :name="'items[' + index + '][precio_unitario]'" x-model="item.precioUnitario"
+                                   min="0" step="0.01" placeholder="0.00"
+                                   class="w-full pl-6 pr-3 border border-gray-200 rounded-xl py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Subtotal</label>
+                        <div class="w-full bg-[#FFF0F5] border border-[#FFD6E5] rounded-xl px-3 py-2 text-sm font-semibold text-[#FF2D6B]"
+                             x-text="'$' + fmt(itemTotal(item))">$0,00</div>
+                    </div>
+                </div>
 
-            <div class="flex gap-3 pt-2">
-                <button type="submit"
-                        class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-3 rounded-xl text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-lg">
-                    Guardar cambios
-                </button>
-                <a href="{{ route('compras.index') }}"
-                   class="border-2 border-gray-300 hover:border-orange-500 hover:text-orange-600 text-gray-600 px-8 py-3 rounded-xl text-sm font-semibold transition-all duration-200">
-                    Cancelar
-                </a>
             </div>
-        </form>
+        </template>
+
+        <button type="button" @click="addItem()"
+                class="w-full py-2.5 border-2 border-dashed border-gray-200 hover:border-[#FF2D6B] text-gray-400 hover:text-[#FF2D6B] rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+            Agregar item
+        </button>
+
+        <div class="flex items-center justify-between bg-[#FF2D6B] rounded-xl px-5 py-4">
+            <span class="text-sm font-semibold text-white/80">Total general</span>
+            <span class="text-2xl font-bold text-white" x-text="'$' + fmt(totalGeneral)">$0,00</span>
+        </div>
     </div>
+
+    <div class="flex items-center gap-3">
+        <button type="submit"
+                class="px-6 py-2.5 bg-[#FF2D6B] hover:bg-[#E0245E] text-white rounded-xl text-sm font-semibold transition-all shadow-sm shadow-[#FF2D6B]/30">
+            Guardar cambios
+        </button>
+        <a href="{{ route('compras.show', $compra) }}"
+           class="px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-800 font-medium rounded-xl border border-gray-200 shadow-sm transition">
+            Cancelar
+        </a>
+    </div>
+
+</form>
+</div>
+
+<script>
+    window._modelosPorMarca = @json($modelosPorMarca);
+    window._itemsInit = @json($itemsInit);
+
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('compraEditForm', () => ({
+            todosModelos: window._modelosPorMarca,
+            items: window._itemsInit,
+
+            addItem() {
+                this.items.push({
+                    marcaId: '', showNuevaMarca: false, marcaNueva: '',
+                    modeloId: '', showNuevoModelo: false, modeloNuevo: '',
+                    nombreDisenio: '', cantidad: '', precioUnitario: ''
+                });
+            },
+
+            removeItem(index) {
+                if (this.items.length > 1) this.items.splice(index, 1);
+            },
+
+            modelosFiltrados(item) {
+                if (!item.marcaId || item.showNuevaMarca) return [];
+                return this.todosModelos[item.marcaId] || [];
+            },
+
+            itemTotal(item) {
+                return (parseFloat(item.cantidad) || 0) * (parseFloat(item.precioUnitario) || 0);
+            },
+
+            get totalGeneral() {
+                return this.items.reduce((sum, item) => sum + this.itemTotal(item), 0);
+            },
+
+            onMarcaChange(item, val) {
+                item.showNuevaMarca = (val === 'nueva');
+                item.marcaId = (val !== 'nueva') ? val : '';
+                item.modeloId = '';
+                item.showNuevoModelo = false;
+                item.modeloNuevo = '';
+            },
+
+            onModeloChange(item, val) {
+                item.showNuevoModelo = (val === 'nuevo');
+                item.modeloId = (val !== 'nuevo') ? val : '';
+            },
+
+            fmt(n) {
+                return n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+        }));
+    });
+</script>
 
 @endsection

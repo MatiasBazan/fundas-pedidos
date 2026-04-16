@@ -7,7 +7,7 @@
         <p class="text-sm text-gray-500 mt-1">Gestión de cuentas del sistema</p>
     </div>
     <a href="{{ route('users.create') }}"
-       class="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-5 py-2.5 rounded-xl shadow-md transition-all duration-200">
+       class="flex items-center gap-2 bg-[#FF2D6B] hover:bg-[#E0245E] text-white font-semibold px-5 py-2.5 rounded-xl shadow-md transition-all duration-200">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
         </svg>
@@ -42,11 +42,11 @@
                     <div class="flex items-center gap-3">
                         <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=f97316&color=ffffff&size=64&font-size=0.5&bold=true"
                              alt="{{ $user->name }}"
-                             class="w-9 h-9 rounded-full border-2 border-orange-200">
+                             class="w-9 h-9 rounded-full border-2 border-[#FFADC8]">
                         <div>
                             <div class="font-semibold text-gray-900">{{ $user->name }}</div>
                             @if($user->id === auth()->id())
-                                <div class="text-xs text-orange-500 font-medium">Vos</div>
+                                <div class="text-xs text-[#FF2D6B] font-medium">Vos</div>
                             @endif
                         </div>
                     </div>
@@ -54,7 +54,7 @@
                 <td class="px-6 py-4 text-gray-600">{{ $user->email }}</td>
                 <td class="px-6 py-4">
                     @if($user->role === 'admin')
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#FFD6E5] text-[#CC1A55]">
                             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
                             </svg>
@@ -84,7 +84,7 @@
                         </form>
                         @endif
                         <a href="{{ route('users.edit', $user) }}"
-                           class="p-2 rounded-lg text-gray-500 hover:text-orange-600 hover:bg-orange-50 transition-all">
+                           class="p-2 rounded-lg text-gray-500 hover:text-[#E0245E] hover:bg-[#FFF0F5] transition-all">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                             </svg>
@@ -133,11 +133,11 @@
         <p class="text-gray-600 text-sm mb-6">Esta acción no se puede deshacer.</p>
         <div class="flex gap-3">
             <button onclick="closeDeleteModal()"
-                    class="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition">
+                    class="flex-1 px-4 py-2 bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-800 font-medium rounded-xl border border-gray-200 shadow-sm transition">
                 Cancelar
             </button>
             <button onclick="confirmDelete()"
-                    class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition">
+                    class="flex-1 px-4 py-2 bg-white hover:bg-red-50 text-red-500 hover:text-red-600 font-medium rounded-xl border border-red-200 shadow-sm transition">
                 Eliminar
             </button>
         </div>

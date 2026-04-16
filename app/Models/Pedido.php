@@ -2,16 +2,19 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Stock;
 use App\Models\User;
 
 class Pedido extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'user_id',
+        'stock_id',
         'nombre_disenio',
         'marca',
         'modelo',
@@ -28,6 +31,11 @@ class Pedido extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function stock()
+    {
+        return $this->belongsTo(Stock::class);
     }
 
     public function marcaRelacion()

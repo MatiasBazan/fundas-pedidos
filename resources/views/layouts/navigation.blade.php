@@ -1,20 +1,20 @@
-<nav x-data="{ open: false }" class="bg-gradient-to-r from-orange-400 to-orange-500 shadow-lg">
+<nav x-data="{ open: false }" class="bg-gradient-to-r from-[#FF2D6B] to-[#FF2D6B] shadow-lg">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-6 py-3">
         <div class="flex justify-between items-center">
             <div class="flex items-center gap-8">
                 <!-- Logo -->
                 <a href="{{ route('pedidos.index') }}" class="flex items-center gap-3 group">
-                    <div class="bg-white rounded-lg p-1.5 shadow-md border-2 border-white group-hover:border-orange-200 transition-all duration-200">
+                    <div class="bg-white rounded-lg p-1.5 shadow-md border-2 border-white group-hover:border-[#FFADC8] transition-all duration-200">
                         <img src="{{ asset('images/logo.png') }}" alt="DF Cases" class="h-7 w-7 object-contain">
                     </div>
-                    <span class="text-white font-bold text-xl hidden sm:block group-hover:text-orange-100 transition-colors">DF Cases</span>
+                    <span class="text-white font-bold text-xl hidden sm:block group-hover:text-[#FFD6E5] transition-colors">DF Cases</span>
                 </a>
 
                 <!-- Navigation Links - Desktop -->
                 <div class="hidden lg:flex items-center gap-2">
                     <a href="{{ route('pedidos.index') }}"
-                       class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('pedidos.index') ? 'bg-white text-orange-500 shadow-md' : 'text-white hover:bg-white/20' }}">
+                       class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('pedidos.index') ? 'bg-white text-[#FF2D6B] shadow-md' : 'text-white hover:bg-white/20' }}">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                         </svg>
@@ -22,7 +22,7 @@
                     </a>
 
                     <a href="{{ route('pedidos.dashboard') }}"
-                       class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('pedidos.dashboard') ? 'bg-white text-orange-500 shadow-md' : 'text-white hover:bg-white/20' }}">
+                       class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('pedidos.dashboard') ? 'bg-white text-[#FF2D6B] shadow-md' : 'text-white hover:bg-white/20' }}">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                         </svg>
@@ -31,7 +31,7 @@
 
                     @if(Auth::user()->isAdmin())
                     <a href="{{ route('users.index') }}"
-                       class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('users.*') ? 'bg-white text-orange-500 shadow-md' : 'text-white hover:bg-white/20' }}">
+                       class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('users.*') ? 'bg-white text-[#FF2D6B] shadow-md' : 'text-white hover:bg-white/20' }}">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                         </svg>
@@ -51,13 +51,13 @@
                             <div class="relative">
                                 <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=ffffff&color=f97316&size=128&font-size=0.5&bold=true"
                                      alt="{{ Auth::user()->name }}"
-                                     class="w-9 h-9 rounded-full border-2 border-white shadow-lg group-hover:border-orange-200 transition-all">
+                                     class="w-9 h-9 rounded-full border-2 border-white shadow-lg group-hover:border-[#FFADC8] transition-all">
                                 <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
                             </div>
 
-                            <span class="hidden xl:block group-hover:text-orange-100 transition-colors">{{ Auth::user()->name }}</span>
+                            <span class="hidden xl:block group-hover:text-[#FFD6E5] transition-colors">{{ Auth::user()->name }}</span>
 
-                            <svg class="w-4 h-4 group-hover:text-orange-100 transition-colors" fill="currentColor" viewBox="0 0 20 20">
+                            <svg class="w-4 h-4 group-hover:text-[#FFD6E5] transition-colors" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                             </svg>
                         </button>
@@ -65,12 +65,12 @@
 
                     <x-slot name="content">
                         <!-- Header del dropdown -->
-                        <div class="px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-orange-50 to-orange-100">
+                        <div class="px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-[#FFF0F5] to-[#FFD6E5]">
                             <div class="flex items-center gap-3">
                                 <div class="relative">
                                     <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=f97316&color=ffffff&size=128&font-size=0.5&bold=true"
                                          alt="{{ Auth::user()->name }}"
-                                         class="w-12 h-12 rounded-full border-2 border-orange-300 shadow-md">
+                                         class="w-12 h-12 rounded-full border-2 border-[#FF8FAB] shadow-md">
                                     <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
                                 </div>
                                 <div>
@@ -82,9 +82,9 @@
 
                         <!-- Opciones del menú -->
                         <div class="py-2">
-                            <x-dropdown-link :href="route('profile.edit')" class="flex items-center gap-3 px-5 py-3 hover:bg-orange-50 transition-colors group">
-                                <div class="p-2 bg-gray-100 rounded-lg group-hover:bg-orange-100 transition-colors">
-                                    <svg class="w-4 h-4 text-gray-600 group-hover:text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <x-dropdown-link :href="route('profile.edit')" class="flex items-center gap-3 px-5 py-3 hover:bg-[#FFF0F5] transition-colors group">
+                                <div class="p-2 bg-gray-100 rounded-lg group-hover:bg-[#FFD6E5] transition-colors">
+                                    <svg class="w-4 h-4 text-gray-600 group-hover:text-[#E0245E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                     </svg>
                                 </div>
@@ -134,7 +134,7 @@
         <!-- Navigation Links -->
         <div class="py-3 space-y-1 border-b border-gray-100">
             <a href="{{ route('pedidos.index') }}"
-               class="flex items-center gap-3 mx-3 px-4 py-3 rounded-xl text-base font-semibold transition-all {{ request()->routeIs('pedidos.index') ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-gray-50' }}">
+               class="flex items-center gap-3 mx-3 px-4 py-3 rounded-xl text-base font-semibold transition-all {{ request()->routeIs('pedidos.index') ? 'bg-[#FFF0F5] text-[#FF2D6B]' : 'text-gray-700 hover:bg-gray-50' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                 </svg>
@@ -142,7 +142,7 @@
             </a>
 
             <a href="{{ route('pedidos.dashboard') }}"
-               class="flex items-center gap-3 mx-3 px-4 py-3 rounded-xl text-base font-semibold transition-all {{ request()->routeIs('pedidos.dashboard') ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-gray-50' }}">
+               class="flex items-center gap-3 mx-3 px-4 py-3 rounded-xl text-base font-semibold transition-all {{ request()->routeIs('pedidos.dashboard') ? 'bg-[#FFF0F5] text-[#FF2D6B]' : 'text-gray-700 hover:bg-gray-50' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                 </svg>
@@ -151,7 +151,7 @@
 
             @if(Auth::user()->isAdmin())
             <a href="{{ route('users.index') }}"
-               class="flex items-center gap-3 mx-3 px-4 py-3 rounded-xl text-base font-semibold transition-all {{ request()->routeIs('users.*') ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-gray-50' }}">
+               class="flex items-center gap-3 mx-3 px-4 py-3 rounded-xl text-base font-semibold transition-all {{ request()->routeIs('users.*') ? 'bg-[#FFF0F5] text-[#FF2D6B]' : 'text-gray-700 hover:bg-gray-50' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                 </svg>
@@ -168,7 +168,7 @@
                     <div class="relative">
                         <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=f97316&color=ffffff&size=128&font-size=0.5&bold=true"
                              alt="{{ Auth::user()->name }}"
-                             class="w-12 h-12 rounded-full border-2 border-orange-200">
+                             class="w-12 h-12 rounded-full border-2 border-[#FFADC8]">
                         <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
                     </div>
                     <div class="flex-1">
