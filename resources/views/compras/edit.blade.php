@@ -84,7 +84,7 @@
 
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Modelo <span class="text-red-400">*</span></label>
-                        <select x-effect="$el.value = item.showNuevoModelo ? 'nuevo' : (item.modeloId || '')"
+                        <select x-effect="let mid = item.showNuevoModelo ? 'nuevo' : (item.modeloId || ''); $nextTick(() => $el.value = mid)"
                                 @change="onModeloChange(item, $event.target.value)"
                                 :disabled="modelosFiltrados(item).length === 0 && !item.showNuevaMarca"
                                 class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all bg-white disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed">
