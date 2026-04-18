@@ -25,14 +25,14 @@
     <form method="GET" action="{{ route('stock.index') }}">
         <input type="hidden" name="categoria" :value="cat">
 
-        <div class="flex flex-wrap items-end gap-4">
+        <div class="flex items-center gap-3 flex-wrap">
             {{-- Modelo --}}
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Modelo</label>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-medium text-gray-400 uppercase tracking-wide">Modelo</label>
                 <select name="modelo_celular"
                         :disabled="cat === 'accesorio'"
                         :class="cat === 'accesorio' ? 'opacity-40 cursor-not-allowed bg-gray-50' : 'bg-white'"
-                        class="w-56 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all">
+                        class="w-44 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all">
                     <option value="">Todos los modelos</option>
                     @foreach($modelos as $modelo)
                         <option value="{{ $modelo }}" {{ request('modelo_celular') === $modelo ? 'selected' : '' }}>{{ $modelo }}</option>
@@ -41,11 +41,11 @@
             </div>
 
             {{-- Diseño / Nombre --}}
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Diseño / Nombre</label>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-medium text-gray-400 uppercase tracking-wide">Diseño / Nombre</label>
                 <select x-show="cat !== 'accesorio'" name="nombre_disenio"
                         :disabled="cat === 'accesorio'"
-                        class="w-56 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all bg-white">
+                        class="w-44 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all bg-white">
                     <option value="">Todos los diseños</option>
                     @foreach($disenios as $d)
                         <option value="{{ $d }}" {{ request('nombre_disenio') === $d ? 'selected' : '' }}>{{ $d }}</option>
@@ -53,7 +53,7 @@
                 </select>
                 <select x-show="cat === 'accesorio'" name="nombre_disenio"
                         :disabled="cat !== 'accesorio'"
-                        class="w-56 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all bg-white">
+                        class="w-44 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all bg-white">
                     <option value="">Todos los nombres</option>
                     @foreach($nombresAccesorio as $n)
                         <option value="{{ $n }}" {{ request('nombre_disenio') === $n ? 'selected' : '' }}>{{ $n }}</option>
@@ -62,29 +62,29 @@
             </div>
 
             {{-- Categoría pills --}}
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Categoría</label>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-medium text-gray-400 uppercase tracking-wide">Categoría</label>
                 <div class="flex items-center gap-1.5">
                     <button type="button" @click="cat = ''"
                             :class="cat === '' ? 'bg-[#FF2D6B] text-white border-[#FF2D6B] font-medium' : 'bg-white text-gray-500 border border-gray-200 hover:border-[#FF2D6B] hover:text-[#FF2D6B]'"
-                            class="rounded-full px-4 py-1.5 text-sm transition cursor-pointer border">
+                            class="rounded-full px-4 py-2 text-sm transition cursor-pointer border">
                         Todos
                     </button>
                     <button type="button" @click="cat = 'funda'"
                             :class="cat === 'funda' ? 'bg-[#FF2D6B] text-white border-[#FF2D6B] font-medium' : 'bg-white text-gray-500 border border-gray-200 hover:border-[#FF2D6B] hover:text-[#FF2D6B]'"
-                            class="rounded-full px-4 py-1.5 text-sm transition cursor-pointer border">
+                            class="rounded-full px-4 py-2 text-sm transition cursor-pointer border">
                         📱 Fundas
                     </button>
                     <button type="button" @click="cat = 'accesorio'"
                             :class="cat === 'accesorio' ? 'bg-[#FF2D6B] text-white border-[#FF2D6B] font-medium' : 'bg-white text-gray-500 border border-gray-200 hover:border-[#FF2D6B] hover:text-[#FF2D6B]'"
-                            class="rounded-full px-4 py-1.5 text-sm transition cursor-pointer border">
+                            class="rounded-full px-4 py-2 text-sm transition cursor-pointer border">
                         🛍 Accesorios
                     </button>
                 </div>
             </div>
 
             {{-- Botones --}}
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 self-center mt-4">
                 <button type="submit" class="bg-[#FF2D6B] hover:bg-[#E0245E] text-white px-6 py-2 rounded-xl text-sm font-semibold transition-all">Filtrar</button>
                 <a href="{{ route('stock.index') }}" class="px-4 py-2 bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-800 font-medium rounded-xl border border-gray-200 shadow-sm transition">✕</a>
             </div>
