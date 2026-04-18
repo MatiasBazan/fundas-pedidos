@@ -96,10 +96,10 @@
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
             <div class="flex justify-between items-start mb-2">
                 <div>
-                    <p class="font-bold text-gray-900">{{ $pedido->nombre_disenio }}</p>
-                    <p class="text-xs text-gray-400 mt-0.5">{{ $pedido->marca }} · {{ $pedido->modelo }}</p>
+                    <p class="font-bold text-gray-900">{{ $pedido->items->first()?->nombre_disenio ?? '—' }}</p>
+                    <p class="text-xs text-gray-400 mt-0.5">{{ $pedido->items->count() }} {{ Str::plural('producto', $pedido->items->count()) }}</p>
                 </div>
-                <span class="text-[#FF2D6B] font-bold text-sm">${{ number_format($pedido->precio, 2, ',', '.') }}</span>
+                <span class="text-[#FF2D6B] font-bold text-sm">${{ number_format($pedido->precio_total, 2, ',', '.') }}</span>
             </div>
             <p class="text-xs text-gray-500 mb-3">{{ $pedido->nombre }} {{ $pedido->apellido }}</p>
             <div class="flex flex-wrap gap-1.5 mb-3">
@@ -114,7 +114,7 @@
                 <a href="{{ route('pedidos.edit', $pedido) }}" class="flex-1 text-center py-2 text-xs font-semibold text-[#FF2D6B] bg-[#FFF0F5] hover:bg-[#FFD6E5] rounded-lg transition-colors">Editar</a>
                 <form method="POST" action="{{ route('pedidos.destroy', $pedido) }}" class="flex-1">
                     @csrf @method('DELETE')
-                    <button type="button" onclick="showDeleteModal(this.form, '{{ $pedido->nombre_disenio }}')"
+                    <button type="button" onclick="showDeleteModal(this.form, 'Pedido #{{ $pedido->id }}')"
                             class="w-full py-2 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">Eliminar</button>
                 </form>
             </div>
@@ -138,10 +138,9 @@
         <thead>
             <tr class="border-b border-gray-100">
                 <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">#</th>
-                <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Diseño</th>
-                <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Dispositivo</th>
+                <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Productos</th>
                 <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Cliente</th>
-                <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Precio</th>
+                <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Total</th>
                 <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Pedido</th>
                 <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Pago</th>
                 <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Tipo</th>
@@ -152,10 +151,14 @@
         @forelse($pedidos as $pedido)
             <tr class="hover:bg-[#FFF0F5]/40 transition-colors">
                 <td class="px-5 py-4 text-gray-400 text-xs font-mono">{{ $pedido->id }}</td>
-                <td class="px-5 py-4 font-semibold text-gray-900">{{ $pedido->nombre_disenio }}</td>
-                <td class="px-5 py-4 text-gray-500">{{ $pedido->marca }}<span class="text-gray-300 mx-1">·</span>{{ $pedido->modelo }}</td>
+                <td class="px-5 py-4">
+                        <p class="font-semibold text-gray-900">{{ $pedido->items->first()?->nombre_disenio ?? '—' }}</p>
+                        @if($pedido->items->count() > 1)
+                            <p class="text-xs text-gray-400 mt-0.5">+{{ $pedido->items->count() - 1 }} más</p>
+                        @endif
+                    </td>
                 <td class="px-5 py-4 text-gray-600">{{ $pedido->nombre }} {{ $pedido->apellido }}</td>
-                <td class="px-5 py-4 font-bold text-gray-900">${{ number_format($pedido->precio, 2, ',', '.') }}</td>
+                <td class="px-5 py-4 font-bold text-gray-900">${{ number_format($pedido->precio_total, 2, ',', '.') }}</td>
                 <td class="px-5 py-4"><x-badge-estado-pedido :estado="$pedido->estado_pedido" /></td>
                 <td class="px-5 py-4"><x-badge-estado-pago :estado="$pedido->estado_pago" /></td>
                 <td class="px-5 py-4"><x-badge-tipo-pago :tipo="$pedido->tipo_pago" /></td>
@@ -177,7 +180,7 @@
                         <form method="POST" action="{{ route('pedidos.destroy', $pedido) }}">
                             @csrf @method('DELETE')
                             <button type="button"
-                                    onclick="showDeleteModal(this.form, '{{ $pedido->nombre_disenio }}')"
+                                    onclick="showDeleteModal(this.form, 'Pedido #{{ $pedido->id }}')"
                                     class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -189,7 +192,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="9" class="px-5 py-16 text-center">
+                <td colspan="8" class="px-5 py-16 text-center">
                     <svg class="w-12 h-12 text-gray-200 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
                     </svg>

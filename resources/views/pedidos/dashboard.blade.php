@@ -226,7 +226,7 @@
                                     <span class="flex items-center justify-center w-6 h-6 rounded-full bg-[#FFD6E5] text-[#FF2D6B] text-xs font-bold">
                                         {{ $index + 1 }}
                                     </span>
-                                    <span class="font-semibold text-gray-900">{{ $marca->marca }}</span>
+                                    <span class="font-semibold text-gray-900">{{ $marca->modelo_celular }}</span>
                                 </div>
                             </td>
                             <td class="px-4 py-4 font-semibold text-gray-900">{{ $marca->cantidad }}</td>
@@ -269,10 +269,10 @@
                                 <span class="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs font-bold">
                                     {{ $index + 1 }}
                                 </span>
-                                <span class="font-semibold text-gray-900">{{ $modelo->modelo }}</span>
+                                <span class="font-semibold text-gray-900">{{ $modelo->nombre_disenio }}</span>
                             </div>
                         </td>
-                        <td class="px-4 py-4 text-gray-700">{{ $modelo->marca }}</td>
+                        <td class="px-4 py-4 text-gray-700">{{ $modelo->modelo_celular }}</td>
                         <td class="px-4 py-4 font-semibold text-gray-900">{{ $modelo->cantidad }}</td>
                         <td class="px-4 py-4 font-semibold text-gray-900">${{ number_format($modelo->total, 2, ',', '.') }}</td>
                     </tr>

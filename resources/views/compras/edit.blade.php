@@ -53,7 +53,27 @@
             <div class="border border-gray-100 rounded-xl p-4 space-y-3 bg-gray-50/40">
 
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wide" x-text="'Item ' + (index + 1)"></span>
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wide" x-text="'Item ' + (index + 1)"></span>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button"
+                                    @click="onCategoriaChange(item, 'funda')"
+                                    :class="item.categoria === 'funda'
+                                        ? 'bg-[#FF2D6B] text-white border-[#FF2D6B] font-medium'
+                                        : 'bg-white text-gray-500 border border-gray-200 hover:border-[#FF2D6B] hover:text-[#FF2D6B]'"
+                                    class="rounded-full px-4 py-1.5 text-sm transition cursor-pointer border">
+                                📱 Funda
+                            </button>
+                            <button type="button"
+                                    @click="onCategoriaChange(item, 'accesorio')"
+                                    :class="item.categoria === 'accesorio'
+                                        ? 'bg-[#FF2D6B] text-white border-[#FF2D6B] font-medium'
+                                        : 'bg-white text-gray-500 border border-gray-200 hover:border-[#FF2D6B] hover:text-[#FF2D6B]'"
+                                    class="rounded-full px-4 py-1.5 text-sm transition cursor-pointer border">
+                                🛍 Accesorio
+                            </button>
+                        </div>
+                    </div>
                     <button type="button" @click="removeItem(index)" x-show="items.length > 1"
                             class="text-xs text-red-400 hover:text-red-600 hover:bg-red-50 px-2 py-1 rounded-lg transition-colors flex items-center gap-1">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -61,8 +81,10 @@
                     </button>
                 </div>
 
-                {{-- Marca / Modelo / Diseño --}}
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <input type="hidden" :name="'items[' + index + '][categoria]'" :value="item.categoria">
+
+                {{-- Marca / Modelo (solo funda) --}}
+                <div x-show="item.categoria === 'funda'" class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Marca <span class="text-red-400">*</span></label>
                         <select x-effect="$el.value = item.showNuevaMarca ? 'nueva' : (item.marcaId || '')"
@@ -103,13 +125,17 @@
                         </div>
                         <input type="hidden" :name="'items[' + index + '][modelo_id]'" :value="item.showNuevoModelo ? '' : item.modeloId">
                     </div>
+                </div>
 
-                    <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Diseño <span class="text-red-400">*</span></label>
-                        <input type="text" :name="'items[' + index + '][nombre_disenio]'" x-model="item.nombreDisenio"
-                               placeholder="Ej: Flores rosas"
-                               class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all">
-                    </div>
+                {{-- Diseño (funda) / Descripción (accesorio) --}}
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">
+                        <span x-text="item.categoria === 'accesorio' ? 'Descripción' : 'Diseño'"></span>
+                        <span class="text-red-400">*</span>
+                    </label>
+                    <input type="text" :name="'items[' + index + '][nombre_disenio]'" x-model="item.nombreDisenio"
+                           :placeholder="item.categoria === 'accesorio' ? 'Ej: Cable USB-C, Auriculares' : 'Ej: Flores rosas'"
+                           class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all">
                 </div>
 
                 {{-- Cantidad / Precio / Subtotal --}}
@@ -176,6 +202,7 @@
 
             addItem() {
                 this.items.push({
+                    categoria: 'funda',
                     marcaId: '', showNuevaMarca: false, marcaNueva: '',
                     modeloId: '', showNuevoModelo: false, modeloNuevo: '',
                     nombreDisenio: '', cantidad: '', precioUnitario: ''
@@ -197,6 +224,17 @@
 
             get totalGeneral() {
                 return this.items.reduce((sum, item) => sum + this.itemTotal(item), 0);
+            },
+
+            onCategoriaChange(item, tipo) {
+                item.categoria = tipo;
+                item.marcaId = '';
+                item.showNuevaMarca = false;
+                item.marcaNueva = '';
+                item.modeloId = '';
+                item.showNuevoModelo = false;
+                item.modeloNuevo = '';
+                item.nombreDisenio = '';
             },
 
             onMarcaChange(item, val) {

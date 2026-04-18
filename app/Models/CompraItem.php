@@ -10,6 +10,7 @@ class CompraItem extends Model
     use HasFactory;
     protected $fillable = [
         'compra_id',
+        'categoria',
         'marca_id',
         'modelo_id',
         'modelo_celular',

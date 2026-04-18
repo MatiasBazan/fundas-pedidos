@@ -5,8 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Stock;
-use App\Models\User;
 
 class Pedido extends Model
 {
@@ -14,15 +12,9 @@ class Pedido extends Model
 
     protected $fillable = [
         'user_id',
-        'stock_id',
-        'nombre_disenio',
-        'marca',
-        'modelo',
-        'marca_id',
-        'modelo_id',
         'nombre',
         'apellido',
-        'precio',
+        'precio_total',
         'estado_pedido',
         'estado_pago',
         'tipo_pago',
@@ -33,18 +25,8 @@ class Pedido extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function stock()
+    public function items()
     {
-        return $this->belongsTo(Stock::class);
-    }
-
-    public function marcaRelacion()
-    {
-        return $this->belongsTo(Marca::class, 'marca_id');
-    }
-
-    public function modeloRelacion()
-    {
-        return $this->belongsTo(Modelo::class, 'modelo_id');
+        return $this->hasMany(PedidoItem::class);
     }
 }

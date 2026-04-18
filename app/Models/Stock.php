@@ -9,6 +9,7 @@ class Stock extends Model
 {
     use HasFactory;
     protected $fillable = [
+        'categoria',
         'modelo_celular',
         'nombre_disenio',
         'cantidad',

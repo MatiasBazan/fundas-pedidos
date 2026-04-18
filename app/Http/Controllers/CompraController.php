@@ -52,18 +52,7 @@ class CompraController extends Controller
         ]);
 
         foreach ($request->input('items', []) as $itemData) {
-            [$marca, $modelo] = $this->resolveItemDependencias($itemData);
-
-            CompraItem::create([
-                'compra_id'       => $compra->id,
-                'marca_id'        => $marca->id,
-                'modelo_id'       => $modelo->id,
-                'modelo_celular'  => $marca->nombre . ' ' . $modelo->nombre,
-                'nombre_disenio'  => $itemData['nombre_disenio'],
-                'cantidad'        => $itemData['cantidad'],
-                'precio_unitario' => $itemData['precio_unitario'],
-                'precio_total'    => $itemData['cantidad'] * $itemData['precio_unitario'],
-            ]);
+            $this->crearItem($compra->id, $itemData);
         }
 
         return redirect()->route('compras.index')->with('success', 'Compra registrada correctamente.');
@@ -82,6 +71,7 @@ class CompraController extends Controller
         $modelosPorMarca = $this->getModelosPorMarca();
 
         $itemsInit = $compra->items->map(fn($item) => [
+            'categoria'      => $item->categoria ?? 'funda',
             'marcaId'        => (string)($item->marca_id ?? ''),
             'showNuevaMarca' => false,
             'marcaNueva'     => '',
@@ -108,18 +98,7 @@ class CompraController extends Controller
 
         // Create new items — observer increments stock for each
         foreach ($request->input('items', []) as $itemData) {
-            [$marca, $modelo] = $this->resolveItemDependencias($itemData);
-
-            CompraItem::create([
-                'compra_id'       => $compra->id,
-                'marca_id'        => $marca->id,
-                'modelo_id'       => $modelo->id,
-                'modelo_celular'  => $marca->nombre . ' ' . $modelo->nombre,
-                'nombre_disenio'  => $itemData['nombre_disenio'],
-                'cantidad'        => $itemData['cantidad'],
-                'precio_unitario' => $itemData['precio_unitario'],
-                'precio_total'    => $itemData['cantidad'] * $itemData['precio_unitario'],
-            ]);
+            $this->crearItem($compra->id, $itemData);
         }
 
         return redirect()->route('compras.index')->with('success', 'Compra actualizada correctamente.');
@@ -135,6 +114,40 @@ class CompraController extends Controller
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
+
+    private function crearItem(int $compraId, array $itemData): void
+    {
+        $categoria = $itemData['categoria'] ?? 'funda';
+
+        if ($categoria === 'accesorio') {
+            CompraItem::create([
+                'compra_id'       => $compraId,
+                'categoria'       => 'accesorio',
+                'marca_id'        => null,
+                'modelo_id'       => null,
+                'modelo_celular'  => 'Accesorio',
+                'nombre_disenio'  => $itemData['nombre_disenio'],
+                'cantidad'        => $itemData['cantidad'],
+                'precio_unitario' => $itemData['precio_unitario'],
+                'precio_total'    => $itemData['cantidad'] * $itemData['precio_unitario'],
+            ]);
+            return;
+        }
+
+        [$marca, $modelo] = $this->resolveItemDependencias($itemData);
+
+        CompraItem::create([
+            'compra_id'       => $compraId,
+            'categoria'       => 'funda',
+            'marca_id'        => $marca->id,
+            'modelo_id'       => $modelo->id,
+            'modelo_celular'  => $marca->nombre . ' ' . $modelo->nombre,
+            'nombre_disenio'  => $itemData['nombre_disenio'],
+            'cantidad'        => $itemData['cantidad'],
+            'precio_unitario' => $itemData['precio_unitario'],
+            'precio_total'    => $itemData['cantidad'] * $itemData['precio_unitario'],
+        ]);
+    }
 
     private function resolveItemDependencias(array $item): array
     {

@@ -11,6 +11,7 @@ class CompraObserver
     {
         $stock = Stock::firstOrCreate(
             [
+                'categoria'      => $item->categoria,
                 'modelo_celular' => $item->modelo_celular,
                 'nombre_disenio' => $item->nombre_disenio,
             ],
@@ -22,7 +23,8 @@ class CompraObserver
 
     public function deleted(CompraItem $item): void
     {
-        $stock = Stock::where('modelo_celular', $item->modelo_celular)
+        $stock = Stock::where('categoria', $item->categoria)
+            ->where('modelo_celular', $item->modelo_celular)
             ->where('nombre_disenio', $item->nombre_disenio)
             ->first();
 

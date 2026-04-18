@@ -11,33 +11,56 @@
     </a>
     <div class="flex items-start justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">{{ $pedido->nombre_disenio }}</h1>
-            <p class="text-sm text-gray-500 mt-0.5">Pedido #{{ $pedido->id }} · {{ $pedido->created_at->format('d/m/Y H:i') }}</p>
+            <h1 class="text-2xl font-bold text-gray-900">Pedido #{{ $pedido->id }}</h1>
+            <p class="text-sm text-gray-500 mt-0.5">{{ $pedido->nombre }} {{ $pedido->apellido }} · {{ $pedido->created_at->format('d/m/Y H:i') }}</p>
         </div>
-        <span class="text-2xl font-bold text-[#FF2D6B] flex-shrink-0">${{ number_format($pedido->precio, 2, ',', '.') }}</span>
+        <span class="text-2xl font-bold text-[#FF2D6B] flex-shrink-0">${{ number_format($pedido->precio_total, 2, ',', '.') }}</span>
     </div>
 </div>
 
 <div class="max-w-3xl space-y-4">
 
-    {{-- Dispositivo --}}
+    {{-- Productos --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-50">
             <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
                 <span class="w-1 h-4 bg-[#FF2D6B] rounded-full"></span>
-                Dispositivo
+                Productos
             </h2>
         </div>
-        <div class="grid grid-cols-2 divide-x divide-gray-50">
-            <div class="px-6 py-4">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Marca</p>
-                <p class="text-gray-900 font-medium">{{ $pedido->marca }}</p>
-            </div>
-            <div class="px-6 py-4">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Modelo</p>
-                <p class="text-gray-900 font-medium">{{ $pedido->modelo }}</p>
-            </div>
-        </div>
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b border-gray-50">
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Producto</th>
+                    <th class="px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Cant.</th>
+                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">P. Unit.</th>
+                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+                @foreach($pedido->items as $item)
+                    <tr>
+                        <td class="px-6 py-4">
+                            <p class="font-semibold text-gray-900">{{ $item->nombre_disenio }}</p>
+                            @if($item->modelo_celular)
+                                <p class="text-xs text-gray-400 mt-0.5">{{ $item->modelo_celular }}</p>
+                            @else
+                                <span class="text-xs bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded font-medium">Accesorio</span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 text-center text-gray-600">{{ $item->cantidad }}</td>
+                        <td class="px-6 py-4 text-right text-gray-600">${{ number_format($item->precio_unitario, 2, ',', '.') }}</td>
+                        <td class="px-6 py-4 text-right font-bold text-gray-900">${{ number_format($item->precio_total, 2, ',', '.') }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+            <tfoot>
+                <tr class="bg-[#FFF0F5] border-t border-[#FFD6E5]">
+                    <td colspan="3" class="px-6 py-3 text-sm font-semibold text-gray-600 text-right">Total</td>
+                    <td class="px-6 py-3 text-right font-bold text-[#FF2D6B]">${{ number_format($pedido->precio_total, 2, ',', '.') }}</td>
+                </tr>
+            </tfoot>
+        </table>
     </div>
 
     {{-- Cliente --}}
@@ -97,7 +120,7 @@
         </a>
         <form method="POST" action="{{ route('pedidos.destroy', $pedido) }}">
             @csrf @method('DELETE')
-            <button type="button" onclick="showDeleteModal(this.form, '{{ $pedido->nombre_disenio }}')"
+            <button type="button" onclick="showDeleteModal(this.form, 'Pedido #{{ $pedido->id }}')"
                     class="inline-flex items-center gap-2 px-6 py-2.5 bg-white hover:bg-red-50 text-red-500 hover:text-red-600 font-medium rounded-xl border border-red-200 shadow-sm transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>

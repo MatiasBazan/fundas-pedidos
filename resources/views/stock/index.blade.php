@@ -5,7 +5,7 @@
 <div class="flex items-center justify-between mb-6">
     <div>
         <h1 class="text-2xl font-bold text-gray-900">Stock</h1>
-        <p class="text-sm text-gray-500 mt-0.5">Unidades disponibles por modelo y diseño</p>
+        <p class="text-sm text-gray-500 mt-0.5">Unidades disponibles por producto</p>
     </div>
     <div class="flex items-center gap-3 text-xs">
         <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1.5 rounded-full font-semibold">
@@ -21,110 +21,215 @@
 </div>
 
 {{-- Filtros --}}
-<div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-5">
+<div x-data="{ cat: '{{ request('categoria', '') }}' }" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-5">
     <form method="GET" action="{{ route('stock.index') }}">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+        <input type="hidden" name="categoria" :value="cat">
+
+        <div class="flex flex-wrap items-end gap-4">
+            {{-- Modelo --}}
             <div>
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Modelo</label>
-                <input type="text" name="modelo_celular" value="{{ request('modelo_celular') }}" placeholder="Ej: iPhone 14..."
-                       class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all">
+                <select name="modelo_celular"
+                        :disabled="cat === 'accesorio'"
+                        :class="cat === 'accesorio' ? 'opacity-40 cursor-not-allowed bg-gray-50' : 'bg-white'"
+                        class="w-56 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all">
+                    <option value="">Todos los modelos</option>
+                    @foreach($modelos as $modelo)
+                        <option value="{{ $modelo }}" {{ request('modelo_celular') === $modelo ? 'selected' : '' }}>{{ $modelo }}</option>
+                    @endforeach
+                </select>
             </div>
+
+            {{-- Diseño / Nombre --}}
             <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Diseño</label>
-                <input type="text" name="nombre_disenio" value="{{ request('nombre_disenio') }}" placeholder="Ej: Flores..."
-                       class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all">
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Diseño / Nombre</label>
+                <select x-show="cat !== 'accesorio'" name="nombre_disenio"
+                        :disabled="cat === 'accesorio'"
+                        class="w-56 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all bg-white">
+                    <option value="">Todos los diseños</option>
+                    @foreach($disenios as $d)
+                        <option value="{{ $d }}" {{ request('nombre_disenio') === $d ? 'selected' : '' }}>{{ $d }}</option>
+                    @endforeach
+                </select>
+                <select x-show="cat === 'accesorio'" name="nombre_disenio"
+                        :disabled="cat !== 'accesorio'"
+                        class="w-56 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all bg-white">
+                    <option value="">Todos los nombres</option>
+                    @foreach($nombresAccesorio as $n)
+                        <option value="{{ $n }}" {{ request('nombre_disenio') === $n ? 'selected' : '' }}>{{ $n }}</option>
+                    @endforeach
+                </select>
             </div>
-            <div class="flex gap-2">
-                <button type="submit" class="flex-1 bg-[#FF2D6B] hover:bg-[#E0245E] text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all">Filtrar</button>
-                <a href="{{ route('stock.index') }}" class="px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-800 font-medium rounded-xl border border-gray-200 shadow-sm transition">✕</a>
+
+            {{-- Categoría pills --}}
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Categoría</label>
+                <div class="flex items-center gap-1.5">
+                    <button type="button" @click="cat = ''"
+                            :class="cat === '' ? 'bg-[#FF2D6B] text-white border-[#FF2D6B] font-medium' : 'bg-white text-gray-500 border border-gray-200 hover:border-[#FF2D6B] hover:text-[#FF2D6B]'"
+                            class="rounded-full px-4 py-1.5 text-sm transition cursor-pointer border">
+                        Todos
+                    </button>
+                    <button type="button" @click="cat = 'funda'"
+                            :class="cat === 'funda' ? 'bg-[#FF2D6B] text-white border-[#FF2D6B] font-medium' : 'bg-white text-gray-500 border border-gray-200 hover:border-[#FF2D6B] hover:text-[#FF2D6B]'"
+                            class="rounded-full px-4 py-1.5 text-sm transition cursor-pointer border">
+                        📱 Fundas
+                    </button>
+                    <button type="button" @click="cat = 'accesorio'"
+                            :class="cat === 'accesorio' ? 'bg-[#FF2D6B] text-white border-[#FF2D6B] font-medium' : 'bg-white text-gray-500 border border-gray-200 hover:border-[#FF2D6B] hover:text-[#FF2D6B]'"
+                            class="rounded-full px-4 py-1.5 text-sm transition cursor-pointer border">
+                        🛍 Accesorios
+                    </button>
+                </div>
+            </div>
+
+            {{-- Botones --}}
+            <div class="flex items-center gap-2">
+                <button type="submit" class="bg-[#FF2D6B] hover:bg-[#E0245E] text-white px-6 py-2 rounded-xl text-sm font-semibold transition-all">Filtrar</button>
+                <a href="{{ route('stock.index') }}" class="px-4 py-2 bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-800 font-medium rounded-xl border border-gray-200 shadow-sm transition">✕</a>
             </div>
         </div>
     </form>
 </div>
 
-{{-- Mobile: cards --}}
-<div class="block md:hidden space-y-3">
-    @forelse($stocks as $stock)
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3.5 flex items-center justify-between">
-            <div>
-                <p class="font-semibold text-gray-900 text-sm">{{ $stock->nombre_disenio }}</p>
-                <p class="text-xs text-gray-400 mt-0.5">{{ $stock->modelo_celular }}</p>
+@php
+    $stockBadge = function(int $cantidad) {
+        if ($cantidad > 3)  return ['bg-emerald-50 text-emerald-700 border-emerald-200', 'bg-emerald-500', $cantidad . ' uds.'];
+        if ($cantidad >= 1) return ['bg-amber-50 text-amber-700 border-amber-200',   'bg-amber-500',   $cantidad . ' uds.'];
+        return              ['bg-rose-50 text-rose-700 border-rose-200',             'bg-rose-500',    'Sin stock'];
+    };
+@endphp
+
+{{-- ── FUNDAS ──────────────────────────────────────────────────────────── --}}
+@if(!request('categoria') || request('categoria') === 'funda')
+<div class="mb-6">
+    <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2 mb-3">
+        <span class="w-1 h-4 bg-[#FF2D6B] rounded-full"></span>
+        Fundas
+    </h2>
+
+    {{-- Mobile --}}
+    <div class="block md:hidden space-y-3">
+        @forelse($fondas as $stock)
+            @php [$cls, $dot, $label] = $stockBadge($stock->cantidad) @endphp
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3.5 flex items-center justify-between">
+                <div>
+                    <p class="font-semibold text-gray-900 text-sm">{{ $stock->nombre_disenio }}</p>
+                    <p class="text-xs text-gray-400 mt-0.5">{{ $stock->modelo_celular }}</p>
+                </div>
+                <span class="inline-flex items-center gap-1.5 border px-3 py-1.5 rounded-full text-sm font-bold {{ $cls }}">
+                    <span class="w-1.5 h-1.5 rounded-full {{ $dot }}"></span> {{ $label }}
+                </span>
             </div>
-            @if($stock->cantidad > 3)
-                <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-full text-sm font-bold">
-                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> {{ $stock->cantidad }}
-                </span>
-            @elseif($stock->cantidad >= 1)
-                <span class="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-full text-sm font-bold">
-                    <span class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span> {{ $stock->cantidad }}
-                </span>
-            @else
-                <span class="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-full text-sm font-bold">
-                    <span class="w-1.5 h-1.5 bg-rose-500 rounded-full"></span> Sin stock
-                </span>
-            @endif
-        </div>
-    @empty
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-            <svg class="w-12 h-12 text-gray-200 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-            </svg>
-            <p class="text-gray-400 text-sm">No hay registros de stock</p>
-        </div>
-    @endforelse
-    @if($stocks->hasPages()) <div class="pt-2">{{ $stocks->links() }}</div> @endif
+        @empty
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center text-gray-400 text-sm">Sin fundas en stock</div>
+        @endforelse
+        @if($fondas->hasPages()) <div class="pt-2">{{ $fondas->links() }}</div> @endif
+    </div>
+
+    {{-- Desktop --}}
+    <div class="hidden md:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b border-gray-100">
+                    <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">#</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Modelo</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Diseño</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Cantidad</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Actualizado</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+            @forelse($fondas as $stock)
+                @php [$cls, $dot, $label] = $stockBadge($stock->cantidad) @endphp
+                <tr class="hover:bg-[#FFF0F5]/40 transition-colors">
+                    <td class="px-5 py-4 text-gray-400 text-xs font-mono">{{ $stock->id }}</td>
+                    <td class="px-5 py-4 text-gray-500">{{ $stock->modelo_celular }}</td>
+                    <td class="px-5 py-4 font-semibold text-gray-900">{{ $stock->nombre_disenio }}</td>
+                    <td class="px-5 py-4">
+                        <span class="inline-flex items-center gap-1.5 border px-2.5 py-1 rounded-full text-xs font-bold {{ $cls }}">
+                            <span class="w-1.5 h-1.5 rounded-full {{ $dot }}"></span> {{ $label }}
+                        </span>
+                    </td>
+                    <td class="px-5 py-4 text-gray-400 text-xs">{{ $stock->updated_at->format('d/m/Y H:i') }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="5" class="px-5 py-12 text-center text-gray-400 text-sm">Sin fundas en stock</td>
+                </tr>
+            @endforelse
+            </tbody>
+        </table>
+        @if($fondas->hasPages())
+            <div class="px-5 py-4 border-t border-gray-100">{{ $fondas->links() }}</div>
+        @endif
+    </div>
 </div>
 
-{{-- Desktop: table --}}
-<div class="hidden md:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-    <table class="w-full text-sm">
-        <thead>
-            <tr class="border-b border-gray-100">
-                <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">#</th>
-                <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Modelo</th>
-                <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Diseño</th>
-                <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Cantidad</th>
-                <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Actualizado</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-50">
-        @forelse($stocks as $stock)
-            <tr class="hover:bg-[#FFF0F5]/40 transition-colors">
-                <td class="px-5 py-4 text-gray-400 text-xs font-mono">{{ $stock->id }}</td>
-                <td class="px-5 py-4 text-gray-500">{{ $stock->modelo_celular }}</td>
-                <td class="px-5 py-4 font-semibold text-gray-900">{{ $stock->nombre_disenio }}</td>
-                <td class="px-5 py-4">
-                    @if($stock->cantidad > 3)
-                        <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full text-xs font-bold">
-                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> {{ $stock->cantidad }} uds.
-                        </span>
-                    @elseif($stock->cantidad >= 1)
-                        <span class="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-full text-xs font-bold">
-                            <span class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span> {{ $stock->cantidad }} uds.
-                        </span>
-                    @else
-                        <span class="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-full text-xs font-bold">
-                            <span class="w-1.5 h-1.5 bg-rose-500 rounded-full"></span> Sin stock
-                        </span>
-                    @endif
-                </td>
-                <td class="px-5 py-4 text-gray-400 text-xs">{{ $stock->updated_at->format('d/m/Y H:i') }}</td>
-            </tr>
+@endif
+{{-- ── ACCESORIOS ──────────────────────────────────────────────────────── --}}
+@if(!request('categoria') || request('categoria') === 'accesorio')
+<div>
+    <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2 mb-3">
+        <span class="w-1 h-4 bg-blue-400 rounded-full"></span>
+        Accesorios
+    </h2>
+
+    {{-- Mobile --}}
+    <div class="block md:hidden space-y-3">
+        @forelse($accesorios as $stock)
+            @php [$cls, $dot, $label] = $stockBadge($stock->cantidad) @endphp
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3.5 flex items-center justify-between">
+                <div>
+                    <p class="font-semibold text-gray-900 text-sm">{{ $stock->nombre_disenio }}</p>
+                    <span class="text-xs bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded font-medium">Accesorio</span>
+                </div>
+                <span class="inline-flex items-center gap-1.5 border px-3 py-1.5 rounded-full text-sm font-bold {{ $cls }}">
+                    <span class="w-1.5 h-1.5 rounded-full {{ $dot }}"></span> {{ $label }}
+                </span>
+            </div>
         @empty
-            <tr>
-                <td colspan="5" class="px-5 py-16 text-center">
-                    <svg class="w-12 h-12 text-gray-200 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                    </svg>
-                    <p class="text-gray-400 text-sm">No hay registros de stock</p>
-                </td>
-            </tr>
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center text-gray-400 text-sm">Sin accesorios en stock</div>
         @endforelse
-        </tbody>
-    </table>
-    @if($stocks->hasPages())
-        <div class="px-5 py-4 border-t border-gray-100">{{ $stocks->links() }}</div>
-    @endif
+        @if($accesorios->hasPages()) <div class="pt-2">{{ $accesorios->links() }}</div> @endif
+    </div>
+
+    {{-- Desktop --}}
+    <div class="hidden md:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b border-gray-100">
+                    <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">#</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Nombre del accesorio</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Cantidad</th>
+                    <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Actualizado</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+            @forelse($accesorios as $stock)
+                @php [$cls, $dot, $label] = $stockBadge($stock->cantidad) @endphp
+                <tr class="hover:bg-blue-50/30 transition-colors">
+                    <td class="px-5 py-4 text-gray-400 text-xs font-mono">{{ $stock->id }}</td>
+                    <td class="px-5 py-4 font-semibold text-gray-900">{{ $stock->nombre_disenio }}</td>
+                    <td class="px-5 py-4">
+                        <span class="inline-flex items-center gap-1.5 border px-2.5 py-1 rounded-full text-xs font-bold {{ $cls }}">
+                            <span class="w-1.5 h-1.5 rounded-full {{ $dot }}"></span> {{ $label }}
+                        </span>
+                    </td>
+                    <td class="px-5 py-4 text-gray-400 text-xs">{{ $stock->updated_at->format('d/m/Y H:i') }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="4" class="px-5 py-12 text-center text-gray-400 text-sm">Sin accesorios en stock</td>
+                </tr>
+            @endforelse
+            </tbody>
+        </table>
+        @if($accesorios->hasPages())
+            <div class="px-5 py-4 border-t border-gray-100">{{ $accesorios->links() }}</div>
+        @endif
+    </div>
 </div>
+@endif
 
 @endsection

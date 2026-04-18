@@ -14,27 +14,31 @@ class PedidoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'stock_id'      => ['required', 'integer', 'exists:stocks,id'],
-            'nombre'        => ['required', 'string', 'max:255'],
-            'apellido'      => ['required', 'string', 'max:255'],
-            'precio'        => ['required', 'numeric', 'min:0'],
-            'estado_pedido' => ['required', 'in:disponible,entregado'],
-            'estado_pago'   => ['required', 'in:no_pagado,pagado'],
-            'tipo_pago'     => [$this->input('estado_pago') === 'pagado' ? 'required' : 'nullable', 'in:efectivo,transferencia'],
+            'items'                   => ['required', 'array', 'min:1'],
+            'items.*.stock_id'        => ['required', 'integer', 'exists:stocks,id'],
+            'items.*.cantidad'        => ['required', 'integer', 'min:1'],
+            'items.*.precio_unitario' => ['required', 'numeric', 'min:0'],
+            'nombre'                  => ['required', 'string', 'max:255'],
+            'apellido'                => ['required', 'string', 'max:255'],
+            'estado_pedido'           => ['required', 'in:disponible,entregado'],
+            'estado_pago'             => ['required', 'in:no_pagado,pagado'],
+            'tipo_pago'               => [$this->input('estado_pago') === 'pagado' ? 'required' : 'nullable', 'in:efectivo,transferencia'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'stock_id.required' => 'Debe seleccionar un producto del stock.',
-            'stock_id.exists'   => 'El producto seleccionado no existe.',
-            'nombre.required'   => 'El nombre es obligatorio.',
-            'apellido.required' => 'El apellido es obligatorio.',
-            'precio.required'   => 'El precio es obligatorio.',
-            'precio.numeric'    => 'El precio debe ser un número.',
-            'precio.min'        => 'El precio debe ser mayor o igual a 0.',
-            'tipo_pago.required' => 'El tipo de pago es obligatorio cuando el estado es pagado.',
+            'items.required'                   => 'Debe agregar al menos un producto.',
+            'items.*.stock_id.required'        => 'Seleccioná un producto para cada ítem.',
+            'items.*.stock_id.exists'          => 'Uno de los productos seleccionados no existe en stock.',
+            'items.*.cantidad.required'        => 'La cantidad es obligatoria.',
+            'items.*.cantidad.min'             => 'La cantidad debe ser al menos 1.',
+            'items.*.precio_unitario.required' => 'El precio unitario es obligatorio.',
+            'items.*.precio_unitario.min'      => 'El precio debe ser mayor o igual a 0.',
+            'nombre.required'                  => 'El nombre es obligatorio.',
+            'apellido.required'                => 'El apellido es obligatorio.',
+            'tipo_pago.required'               => 'El tipo de pago es obligatorio cuando el estado es pagado.',
         ];
     }
 }

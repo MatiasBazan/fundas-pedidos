@@ -18,27 +18,34 @@
     </div>
 </div>
 
+@php
+    $fondas     = $compra->items->where('categoria', 'funda');
+    $accesorios = $compra->items->where('categoria', 'accesorio');
+@endphp
+
 <div class="space-y-4">
 
-    {{-- Items table --}}
+    {{-- Fundas --}}
+    @if($fondas->isNotEmpty())
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
-            <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
-                <span class="w-1 h-4 bg-[#FF2D6B] rounded-full"></span>
-                Items de la compra
-            </h2>
-            <span class="text-xs text-gray-400">{{ $compra->items->count() }} {{ Str::plural('item', $compra->items->count()) }}</span>
+        <div class="px-6 py-4 border-b border-gray-50 flex items-center gap-3">
+            <span class="w-1 h-4 bg-[#FF2D6B] rounded-full"></span>
+            <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Fundas</h2>
+            <span class="text-xs text-gray-400 ml-auto">{{ $fondas->count() }} {{ Str::plural('item', $fondas->count()) }}</span>
         </div>
 
         {{-- Mobile --}}
         <div class="block md:hidden divide-y divide-gray-50">
-            @foreach($compra->items as $item)
+            @foreach($fondas as $item)
                 <div class="p-4">
                     <div class="flex justify-between items-start mb-1">
                         <p class="font-semibold text-gray-900 text-sm">{{ $item->nombre_disenio }}</p>
                         <span class="text-[#FF2D6B] font-bold text-sm">${{ number_format($item->precio_total, 2, ',', '.') }}</span>
                     </div>
-                    <p class="text-xs text-gray-500 mb-1">{{ $item->modelo_celular }}</p>
+                    <div class="flex items-center gap-2 mb-1">
+                        <p class="text-xs text-gray-500">{{ $item->modelo_celular }}</p>
+                        <span class="text-xs bg-[#FFF0F5] text-[#FF2D6B] px-1.5 py-0.5 rounded font-medium">Funda</span>
+                    </div>
                     <p class="text-xs text-gray-400">{{ number_format($item->cantidad) }} uds. · ${{ number_format($item->precio_unitario, 2, ',', '.') }} c/u</p>
                 </div>
             @endforeach
@@ -57,10 +64,13 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
-                @foreach($compra->items as $i => $item)
+                @foreach($fondas as $i => $item)
                     <tr class="hover:bg-[#FFF0F5]/30 transition-colors">
                         <td class="px-5 py-3.5 text-gray-400 text-xs">{{ $i + 1 }}</td>
-                        <td class="px-5 py-3.5 text-gray-600">{{ $item->modelo_celular }}</td>
+                        <td class="px-5 py-3.5 text-gray-600">
+                            {{ $item->modelo_celular }}
+                            <span class="ml-1.5 text-xs bg-[#FFF0F5] text-[#FF2D6B] px-1.5 py-0.5 rounded font-medium">Funda</span>
+                        </td>
                         <td class="px-5 py-3.5 font-medium text-gray-900">{{ $item->nombre_disenio }}</td>
                         <td class="px-5 py-3.5 text-right text-gray-600">{{ number_format($item->cantidad) }}</td>
                         <td class="px-5 py-3.5 text-right text-gray-600">${{ number_format($item->precio_unitario, 2, ',', '.') }}</td>
@@ -70,14 +80,77 @@
             </tbody>
             <tfoot>
                 <tr class="border-t border-gray-100 bg-[#FFF0F5]">
-                    <td colspan="3" class="px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Total general</td>
-                    <td class="px-5 py-3.5 text-right font-bold text-gray-900">{{ number_format($compra->items->sum('cantidad')) }}</td>
+                    <td colspan="3" class="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Subtotal fundas</td>
+                    <td class="px-5 py-3 text-right font-bold text-gray-900">{{ number_format($fondas->sum('cantidad')) }}</td>
                     <td></td>
-                    <td class="px-5 py-3.5 text-right font-bold text-[#FF2D6B] text-base">${{ number_format($compra->total_general, 2, ',', '.') }}</td>
+                    <td class="px-5 py-3 text-right font-bold text-[#FF2D6B]">${{ number_format($fondas->sum('precio_total'), 2, ',', '.') }}</td>
                 </tr>
             </tfoot>
         </table>
     </div>
+    @endif
+
+    {{-- Accesorios --}}
+    @if($accesorios->isNotEmpty())
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-50 flex items-center gap-3">
+            <span class="w-1 h-4 bg-blue-400 rounded-full"></span>
+            <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Accesorios</h2>
+            <span class="text-xs text-gray-400 ml-auto">{{ $accesorios->count() }} {{ Str::plural('item', $accesorios->count()) }}</span>
+        </div>
+
+        {{-- Mobile --}}
+        <div class="block md:hidden divide-y divide-gray-50">
+            @foreach($accesorios as $item)
+                <div class="p-4">
+                    <div class="flex justify-between items-start mb-1">
+                        <p class="font-semibold text-gray-900 text-sm">{{ $item->nombre_disenio }}</p>
+                        <span class="text-blue-500 font-bold text-sm">${{ number_format($item->precio_total, 2, ',', '.') }}</span>
+                    </div>
+                    <div class="mb-1">
+                        <span class="text-xs bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded font-medium">Accesorio</span>
+                    </div>
+                    <p class="text-xs text-gray-400">{{ number_format($item->cantidad) }} uds. · ${{ number_format($item->precio_unitario, 2, ',', '.') }} c/u</p>
+                </div>
+            @endforeach
+        </div>
+
+        {{-- Desktop --}}
+        <table class="hidden md:table w-full text-sm">
+            <thead>
+                <tr class="border-b border-gray-50">
+                    <th class="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">#</th>
+                    <th class="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Nombre</th>
+                    <th class="px-5 py-3 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Cant.</th>
+                    <th class="px-5 py-3 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">P. Unit.</th>
+                    <th class="px-5 py-3 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">P. Total</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+                @foreach($accesorios as $i => $item)
+                    <tr class="hover:bg-blue-50/30 transition-colors">
+                        <td class="px-5 py-3.5 text-gray-400 text-xs">{{ $i + 1 }}</td>
+                        <td class="px-5 py-3.5 font-medium text-gray-900">
+                            {{ $item->nombre_disenio }}
+                            <span class="ml-1.5 text-xs bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded font-medium">Accesorio</span>
+                        </td>
+                        <td class="px-5 py-3.5 text-right text-gray-600">{{ number_format($item->cantidad) }}</td>
+                        <td class="px-5 py-3.5 text-right text-gray-600">${{ number_format($item->precio_unitario, 2, ',', '.') }}</td>
+                        <td class="px-5 py-3.5 text-right font-bold text-gray-900">${{ number_format($item->precio_total, 2, ',', '.') }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+            <tfoot>
+                <tr class="border-t border-gray-100 bg-blue-50">
+                    <td colspan="2" class="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Subtotal accesorios</td>
+                    <td class="px-5 py-3 text-right font-bold text-gray-900">{{ number_format($accesorios->sum('cantidad')) }}</td>
+                    <td></td>
+                    <td class="px-5 py-3 text-right font-bold text-blue-500">${{ number_format($accesorios->sum('precio_total'), 2, ',', '.') }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    @endif
 
     {{-- Observaciones --}}
     @if($compra->observaciones)
