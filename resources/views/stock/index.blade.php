@@ -29,36 +29,46 @@
             {{-- Modelo --}}
             <div class="flex flex-col gap-1">
                 <label class="text-xs font-medium text-gray-400 uppercase tracking-wide">Modelo</label>
-                <select name="modelo_celular"
-                        :disabled="cat === 'accesorio'"
-                        :class="cat === 'accesorio' ? 'opacity-40 cursor-not-allowed bg-gray-50' : 'bg-white'"
-                        class="w-44 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all">
-                    <option value="">Todos los modelos</option>
-                    @foreach($modelos as $modelo)
-                        <option value="{{ $modelo }}" {{ request('modelo_celular') === $modelo ? 'selected' : '' }}>{{ $modelo }}</option>
-                    @endforeach
-                </select>
+                <div class="w-44">
+                    <select name="modelo_celular"
+                            :disabled="cat === 'accesorio'"
+                            x-init="$el._ts = new TomSelect($el, { create: false, allowEmptyOption: true, maxOptions: 300 })"
+                            x-effect="if ($el._ts) { cat === 'accesorio' ? $el._ts.disable() : $el._ts.enable() }">
+                        <option value="">Todos los modelos</option>
+                        @foreach($modelos as $modelo)
+                            <option value="{{ $modelo }}" {{ request('modelo_celular') === $modelo ? 'selected' : '' }}>{{ $modelo }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
 
             {{-- Diseño / Nombre --}}
             <div class="flex flex-col gap-1">
                 <label class="text-xs font-medium text-gray-400 uppercase tracking-wide">Diseño / Nombre</label>
-                <select x-show="cat !== 'accesorio'" name="nombre_disenio"
-                        :disabled="cat === 'accesorio'"
-                        class="w-44 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all bg-white">
-                    <option value="">Todos los diseños</option>
-                    @foreach($disenios as $d)
-                        <option value="{{ $d }}" {{ request('nombre_disenio') === $d ? 'selected' : '' }}>{{ $d }}</option>
-                    @endforeach
-                </select>
-                <select x-show="cat === 'accesorio'" name="nombre_disenio"
-                        :disabled="cat !== 'accesorio'"
-                        class="w-44 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all bg-white">
-                    <option value="">Todos los nombres</option>
-                    @foreach($nombresAccesorio as $n)
-                        <option value="{{ $n }}" {{ request('nombre_disenio') === $n ? 'selected' : '' }}>{{ $n }}</option>
-                    @endforeach
-                </select>
+                <div class="w-44">
+                    <div x-show="cat !== 'accesorio'" style="display:none">
+                        <select name="nombre_disenio"
+                                :disabled="cat === 'accesorio'"
+                                x-init="$el._ts = new TomSelect($el, { create: false, allowEmptyOption: true, maxOptions: 300 })"
+                                x-effect="if ($el._ts) { cat === 'accesorio' ? $el._ts.disable() : $el._ts.enable() }">
+                            <option value="">Todos los diseños</option>
+                            @foreach($disenios as $d)
+                                <option value="{{ $d }}" {{ request('nombre_disenio') === $d ? 'selected' : '' }}>{{ $d }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div x-show="cat === 'accesorio'" style="display:none">
+                        <select name="nombre_disenio"
+                                :disabled="cat !== 'accesorio'"
+                                x-init="$el._ts = new TomSelect($el, { create: false, allowEmptyOption: true, maxOptions: 300 })"
+                                x-effect="if ($el._ts) { cat !== 'accesorio' ? $el._ts.disable() : $el._ts.enable() }">
+                            <option value="">Todos los nombres</option>
+                            @foreach($nombresAccesorio as $n)
+                                <option value="{{ $n }}" {{ request('nombre_disenio') === $n ? 'selected' : '' }}>{{ $n }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
             </div>
 
             {{-- Categoría pills --}}

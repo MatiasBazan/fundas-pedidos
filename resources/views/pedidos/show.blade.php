@@ -7,11 +7,11 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
         </svg>
-        Volver a Pedidos
+        Volver a Ventas
     </a>
     <div class="flex items-start justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Pedido #{{ $pedido->id }}</h1>
+            <h1 class="text-2xl font-bold text-gray-900">Venta #{{ $pedido->id }}</h1>
             <p class="text-sm text-gray-500 mt-0.5">{{ $pedido->nombre }} {{ $pedido->apellido }} · {{ $pedido->created_at->format('d/m/Y H:i') }}</p>
         </div>
         <span class="text-2xl font-bold text-[#FF2D6B] flex-shrink-0">${{ number_format($pedido->precio_total, 2, ',', '.') }}</span>

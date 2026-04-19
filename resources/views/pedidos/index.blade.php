@@ -5,8 +5,8 @@
 {{-- Page header --}}
 <div class="flex items-center justify-between mb-6">
     <div>
-        <h1 class="text-2xl font-bold text-gray-900">Pedidos</h1>
-        <p class="text-sm text-gray-500 mt-0.5">Gestión de pedidos de fundas</p>
+        <h1 class="text-2xl font-bold text-gray-900">Ventas</h1>
+        <p class="text-sm text-gray-500 mt-0.5">Gestión de ventas</p>
     </div>
     <div class="flex items-center gap-2">
         <a href="{{ route('pedidos.export') }}?{{ http_build_query(request()->only(['estado_pedido','estado_pago','tipo_pago','buscar'])) }}"
@@ -21,7 +21,7 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
             </svg>
-            Nuevo pedido
+            Nueva venta
         </a>
     </div>
 </div>
@@ -44,7 +44,7 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Estado pedido</label>
-                    <select name="estado_pedido" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all bg-white">
+                    <select name="estado_pedido" data-ts>
                         <option value="">Todos</option>
                         <option value="disponible" {{ request('estado_pedido') == 'disponible' ? 'selected' : '' }}>Disponible</option>
                         <option value="entregado"  {{ request('estado_pedido') == 'entregado'  ? 'selected' : '' }}>Entregado</option>
@@ -52,7 +52,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Estado pago</label>
-                    <select name="estado_pago" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all bg-white">
+                    <select name="estado_pago" data-ts>
                         <option value="">Todos</option>
                         <option value="pagado"    {{ request('estado_pago') == 'pagado'    ? 'selected' : '' }}>Pagado</option>
                         <option value="no_pagado" {{ request('estado_pago') == 'no_pagado' ? 'selected' : '' }}>No pagado</option>
@@ -60,7 +60,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Tipo pago</label>
-                    <select name="tipo_pago" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all bg-white">
+                    <select name="tipo_pago" data-ts>
                         <option value="">Todos</option>
                         <option value="efectivo"      {{ request('tipo_pago') == 'efectivo'      ? 'selected' : '' }}>Efectivo</option>
                         <option value="transferencia" {{ request('tipo_pago') == 'transferencia' ? 'selected' : '' }}>Transferencia</option>

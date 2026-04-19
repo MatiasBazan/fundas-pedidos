@@ -85,7 +85,7 @@ class PedidoController extends Controller
             $pedido->update(['precio_total' => round($precioTotal, 2)]);
         });
 
-        return redirect()->route('pedidos.index')->with('success', 'Pedido cargado correctamente.');
+        return redirect()->route('pedidos.index')->with('success', 'Venta cargada correctamente.');
     }
 
     public function show(Pedido $pedido)
@@ -187,7 +187,7 @@ class PedidoController extends Controller
             ]);
         });
 
-        return redirect()->route('pedidos.index')->with('success', 'Pedido actualizado correctamente.');
+        return redirect()->route('pedidos.index')->with('success', 'Venta actualizada correctamente.');
     }
 
     public function destroy(Pedido $pedido)
@@ -206,7 +206,7 @@ class PedidoController extends Controller
             $pedido->delete();
         });
 
-        return redirect()->route('pedidos.index')->with('success', 'Pedido eliminado correctamente.');
+        return redirect()->route('pedidos.index')->with('success', 'Venta eliminada correctamente.');
     }
 
     public function exportCsv(Request $request)

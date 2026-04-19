@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DF Cases</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @stack('scripts')
@@ -66,7 +67,7 @@
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
             </svg>
-            Pedidos
+            Ventas
         </a>
 
         <a href="{{ route('stats.index') }}"
@@ -178,5 +179,12 @@
     </footer>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('select[data-ts]').forEach(function (el) {
+        new TomSelect(el, { create: false, allowEmptyOption: true, maxOptions: 300 });
+    });
+});
+</script>
 </body>
 </html>

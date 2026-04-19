@@ -7,9 +7,9 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
         </svg>
-        Volver a Pedidos
+        Volver a Ventas
     </a>
-    <h1 class="text-2xl font-bold text-gray-900">Editar pedido <span class="text-gray-400 font-normal">#{{ $pedido->id }}</span></h1>
+    <h1 class="text-2xl font-bold text-gray-900">Editar venta <span class="text-gray-400 font-normal">#{{ $pedido->id }}</span></h1>
     <p class="text-sm text-gray-500 mt-0.5">{{ $pedido->nombre }} {{ $pedido->apellido }} · {{ $pedido->items->count() }} {{ Str::plural('producto', $pedido->items->count()) }}</p>
 </div>
 
@@ -44,7 +44,7 @@
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
         <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
             <span class="w-1 h-4 bg-[#FF2D6B] rounded-full"></span>
-            Productos
+            Productos vendidos
         </h2>
 
         @error('items') <p class="text-red-500 text-xs">{{ $message }}</p> @enderror
@@ -65,19 +65,19 @@
                     <div class="md:col-span-1">
                         <label class="block text-xs font-medium text-gray-500 mb-1">Producto <span class="text-red-400">*</span></label>
                         <select :name="'items[' + index + '][stock_id]'" x-model="item.stock_id"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all bg-white">
+                                x-init="new TomSelect($el, { create: false, allowEmptyOption: true, sortField: false, placeholder: 'Seleccioná un producto' })">
                             <option value="">Seleccioná un producto</option>
                             @if($fondas->isNotEmpty())
                             <optgroup label="📱 Fundas">
                                 @foreach($fondas as $stock)
-                                    <option value="{{ $stock->id }}">{{ $stock->modelo_celular }} — {{ $stock->nombre_disenio }} ({{ $stock->cantidad }} disp.)</option>
+                                    <option value="{{ $stock->id }}">{{ $stock->modelo_celular }} — {{ $stock->nombre_disenio }} ({{ $stock->cantidad }} uds. disponibles)</option>
                                 @endforeach
                             </optgroup>
                             @endif
                             @if($accesorios->isNotEmpty())
                             <optgroup label="🛍 Accesorios">
                                 @foreach($accesorios as $stock)
-                                    <option value="{{ $stock->id }}">{{ $stock->nombre_disenio }} ({{ $stock->cantidad }} disp.)</option>
+                                    <option value="{{ $stock->id }}">{{ $stock->nombre_disenio }} ({{ $stock->cantidad }} uds. disponibles)</option>
                                 @endforeach
                             </optgroup>
                             @endif
@@ -92,7 +92,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Precio unitario <span class="text-red-400">*</span></label>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Precio de venta <span class="text-red-400">*</span></label>
                         <div class="relative">
                             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
                             <input type="number" :name="'items[' + index + '][precio_unitario]'" x-model="item.precio_unitario"
@@ -131,14 +131,14 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-600 mb-1.5">Estado del pedido</label>
-                <select name="estado_pedido" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all bg-white">
+                <select name="estado_pedido" data-ts>
                     <option value="disponible" {{ old('estado_pedido', $pedido->estado_pedido) == 'disponible' ? 'selected' : '' }}>Disponible</option>
                     <option value="entregado"  {{ old('estado_pedido', $pedido->estado_pedido) == 'entregado'  ? 'selected' : '' }}>Entregado</option>
                 </select>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-600 mb-1.5">Estado de pago</label>
-                <select name="estado_pago" id="estado_pago" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all bg-white">
+                <select name="estado_pago" id="estado_pago" data-ts>
                     <option value="no_pagado" {{ old('estado_pago', $pedido->estado_pago) == 'no_pagado' ? 'selected' : '' }}>No pagado</option>
                     <option value="pagado"    {{ old('estado_pago', $pedido->estado_pago) == 'pagado'    ? 'selected' : '' }}>Pagado</option>
                 </select>
@@ -146,10 +146,12 @@
         </div>
         <div id="tipo-pago-field" class="mt-4 hidden">
             <label class="block text-sm font-medium text-gray-600 mb-1.5">Tipo de pago</label>
-            <select name="tipo_pago" class="w-full md:w-48 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all bg-white">
-                <option value="efectivo"      {{ old('tipo_pago', $pedido->tipo_pago) == 'efectivo'      ? 'selected' : '' }}>Efectivo</option>
-                <option value="transferencia" {{ old('tipo_pago', $pedido->tipo_pago) == 'transferencia' ? 'selected' : '' }}>Transferencia</option>
-            </select>
+            <div class="md:w-48">
+                <select name="tipo_pago" data-ts>
+                    <option value="efectivo"      {{ old('tipo_pago', $pedido->tipo_pago) == 'efectivo'      ? 'selected' : '' }}>Efectivo</option>
+                    <option value="transferencia" {{ old('tipo_pago', $pedido->tipo_pago) == 'transferencia' ? 'selected' : '' }}>Transferencia</option>
+                </select>
+            </div>
         </div>
     </div>
 

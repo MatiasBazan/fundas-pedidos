@@ -87,9 +87,11 @@
                 <div x-show="item.categoria === 'funda'" class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Marca <span class="text-red-400">*</span></label>
-                        <select x-effect="$el.value = item.showNuevaMarca ? 'nueva' : (item.marcaId || '')"
-                                @change="onMarcaChange(item, $event.target.value)"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all bg-white">
+                        <select @change="onMarcaChange(item, $event.target.value)"
+                                x-effect="
+                                    if (!$el._ts) $el._ts = new TomSelect($el, { create: false, allowEmptyOption: true, maxOptions: 300 });
+                                    $el._ts.setValue(item.showNuevaMarca ? 'nueva' : (String(item.marcaId) || ''), true);
+                                ">
                             <option value="">Seleccioná una marca</option>
                             @foreach($marcas as $marca)
                                 <option value="{{ $marca->id }}">{{ $marca->nombre }}</option>
@@ -106,17 +108,19 @@
 
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Modelo <span class="text-red-400">*</span></label>
-                        <select x-effect="let mid = item.showNuevoModelo ? 'nuevo' : (item.modeloId || ''); $nextTick(() => $el.value = mid)"
-                                @change="onModeloChange(item, $event.target.value)"
-                                :disabled="modelosFiltrados(item).length === 0 && !item.showNuevaMarca"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all bg-white disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed">
-                            <option value="" x-text="(item.marcaId || item.showNuevaMarca) ? 'Seleccioná un modelo' : 'Primero seleccioná marca'"></option>
-                            <template x-for="m in modelosFiltrados(item)" :key="m.id">
-                                <option :value="m.id" x-text="m.nombre"></option>
-                            </template>
-                            <template x-if="item.marcaId || item.showNuevaMarca">
-                                <option value="nuevo">＋ Nuevo modelo</option>
-                            </template>
+                        <select @change="onModeloChange(item, $event.target.value)"
+                                x-effect="
+                                    if (!$el._ts) $el._ts = new TomSelect($el, { create: false, allowEmptyOption: true, maxOptions: 300 });
+                                    let ts = $el._ts, ms = modelosFiltrados(item), hasCtx = !!(item.marcaId || item.showNuevaMarca);
+                                    ts.clearOptions();
+                                    ts.addOption({ value: '', text: hasCtx ? 'Seleccioná un modelo' : 'Primero seleccioná marca' });
+                                    ms.forEach(m => ts.addOption({ value: String(m.id), text: m.nombre }));
+                                    if (hasCtx) ts.addOption({ value: 'nuevo', text: '＋ Nuevo modelo' });
+                                    ts.refreshOptions(false);
+                                    ts.setValue(item.showNuevoModelo ? 'nuevo' : (item.modeloId ? String(item.modeloId) : ''), true);
+                                    (ms.length === 0 && !item.showNuevaMarca) ? ts.disable() : ts.enable();
+                                ">
+                            <option value="">Primero seleccioná marca</option>
                         </select>
                         <div x-show="item.showNuevoModelo" x-transition class="mt-1.5">
                             <input type="text" :name="'items[' + index + '][modelo_nuevo]'" x-model="item.modeloNuevo"
