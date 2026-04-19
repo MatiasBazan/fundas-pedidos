@@ -146,7 +146,7 @@
         </div>
         <div id="tipo-pago-field" class="mt-4 hidden">
             <label class="block text-sm font-medium text-gray-600 mb-1.5">Tipo de pago</label>
-            <div class="md:w-48">
+            <div class="w-full md:w-48">
                 <select name="tipo_pago" data-ts>
                     <option value="efectivo"      {{ old('tipo_pago', $pedido->tipo_pago) == 'efectivo'      ? 'selected' : '' }}>Efectivo</option>
                     <option value="transferencia" {{ old('tipo_pago', $pedido->tipo_pago) == 'transferencia' ? 'selected' : '' }}>Transferencia</option>

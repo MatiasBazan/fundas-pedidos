@@ -25,6 +25,7 @@
 @endif
 
 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="overflow-x-auto">
     <table class="w-full text-sm">
         <thead class="bg-gray-50 border-b border-gray-100">
             <tr>
@@ -115,59 +116,6 @@
             @endforelse
         </tbody>
     </table>
-</div>
-{{-- Modal eliminación --}}
-<div id="deleteModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl shadow-xl p-6 max-w-sm mx-4">
-        <div class="flex items-center gap-3 mb-4">
-            <div class="bg-red-100 rounded-full p-3">
-                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                </svg>
-            </div>
-            <div>
-                <h3 class="text-lg font-semibold text-gray-800">¿Eliminar usuario?</h3>
-                <p class="text-sm text-gray-500" id="userInfo"></p>
-            </div>
-        </div>
-        <p class="text-gray-600 text-sm mb-6">Esta acción no se puede deshacer.</p>
-        <div class="flex gap-3">
-            <button onclick="closeDeleteModal()"
-                    class="flex-1 px-4 py-2 bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-800 font-medium rounded-xl border border-gray-200 shadow-sm transition">
-                Cancelar
-            </button>
-            <button onclick="confirmDelete()"
-                    class="flex-1 px-4 py-2 bg-white hover:bg-red-50 text-red-500 hover:text-red-600 font-medium rounded-xl border border-red-200 shadow-sm transition">
-                Eliminar
-            </button>
-        </div>
     </div>
 </div>
-
-<script>
-    let deleteForm = null;
-
-    function showDeleteModal(form, userInfo) {
-        deleteForm = form;
-        document.getElementById('userInfo').textContent = userInfo;
-        document.getElementById('deleteModal').classList.remove('hidden');
-    }
-
-    function closeDeleteModal() {
-        document.getElementById('deleteModal').classList.add('hidden');
-        deleteForm = null;
-    }
-
-    function confirmDelete() {
-        if (deleteForm) deleteForm.submit();
-    }
-
-    document.getElementById('deleteModal').addEventListener('click', function(e) {
-        if (e.target === this) closeDeleteModal();
-    });
-
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeDeleteModal();
-    });
-</script>
 @endsection

@@ -15,7 +15,8 @@
 
 <div x-data="compraForm">
 
-<form method="POST" action="{{ route('compras.store') }}" class="space-y-5">
+<form method="POST" action="{{ route('compras.store') }}" class="space-y-5"
+      @submit="console.log('compra submit - items:', JSON.parse(JSON.stringify(items)))">
     @csrf
 
     {{-- Datos generales --}}
@@ -142,7 +143,7 @@
                 </div>
 
                 {{-- Cantidad / Precio / Subtotal --}}
-                <div class="grid grid-cols-3 gap-3">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Cantidad <span class="text-red-400">*</span></label>
                         <input type="number" :name="'items[' + index + '][cantidad]'" x-model="item.cantidad"
@@ -174,13 +175,13 @@
             Agregar item
         </button>
 
-        <div class="flex items-center justify-between bg-[#FF2D6B] rounded-xl px-5 py-4">
-            <span class="text-sm font-semibold text-white/80">Total general</span>
-            <span class="text-2xl font-bold text-white" x-text="'$' + fmt(totalGeneral)">$0,00</span>
+        <div class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-6 py-4">
+            <span class="text-sm font-medium text-gray-500">Total general</span>
+            <span class="text-xl font-bold text-[#FF2D6B]" x-text="'$' + fmt(totalGeneral)">$0,00</span>
         </div>
     </div>
 
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3 border-t border-gray-100 mt-4 pt-4">
         <button type="submit"
                 class="px-6 py-2.5 bg-[#FF2D6B] hover:bg-[#E0245E] text-white rounded-xl text-sm font-semibold transition-all shadow-sm shadow-[#FF2D6B]/30">
             Registrar compra

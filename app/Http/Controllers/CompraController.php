@@ -6,8 +6,11 @@ use App\Models\Compra;
 use App\Models\CompraItem;
 use App\Models\Marca;
 use App\Models\Modelo;
+use App\Models\PedidoItem;
 use App\Http\Requests\CompraRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CompraController extends Controller
 {
@@ -46,14 +49,26 @@ class CompraController extends Controller
 
     public function store(CompraRequest $request)
     {
-        $compra = Compra::create([
+        Log::info('CompraController@store - inicio', [
             'fecha'        => $request->fecha,
             'observaciones' => $request->observaciones,
+            'items'        => $request->input('items', []),
         ]);
 
-        foreach ($request->input('items', []) as $itemData) {
-            $this->crearItem($compra->id, $itemData);
-        }
+        $compra = DB::transaction(function () use ($request) {
+            $compra = Compra::create([
+                'fecha'        => $request->fecha,
+                'observaciones' => $request->observaciones,
+            ]);
+
+            foreach ($request->input('items', []) as $itemData) {
+                $this->crearItem($compra->id, $itemData);
+            }
+
+            return $compra;
+        });
+
+        Log::info('CompraController@store - guardado OK', ['compra_id' => $compra->id]);
 
         return redirect()->route('compras.index')->with('success', 'Compra registrada correctamente.');
     }
@@ -61,7 +76,44 @@ class CompraController extends Controller
     public function show(Compra $compra)
     {
         $compra->load('items');
-        return view('compras.show', compact('compra'));
+
+        $rentabilidad = [];
+        foreach ($compra->items as $item) {
+            $ventas = PedidoItem::where('modelo_celular', $item->modelo_celular)
+                ->where('nombre_disenio', $item->nombre_disenio)
+                ->get();
+
+            $cantidadVendida  = $ventas->sum('cantidad');
+            $ingresosGenerados = $ventas->sum('precio_total');
+            $costoItem        = $item->precio_total;
+            $gananciaItem     = $ingresosGenerados - $costoItem;
+            $margenItem       = $costoItem > 0 ? ($gananciaItem / $costoItem) * 100 : 0;
+            $porcentajeVendido = $item->cantidad > 0 ? min(($cantidadVendida / $item->cantidad) * 100, 100) : 0;
+
+            $rentabilidad[$item->id] = [
+                'cantidad_vendida'   => $cantidadVendida,
+                'unidades_restantes' => $item->cantidad - $cantidadVendida,
+                'ingresos_generados' => $ingresosGenerados,
+                'costo_item'         => $costoItem,
+                'ganancia_item'      => $gananciaItem,
+                'margen_item'        => $margenItem,
+                'porcentaje_vendido' => $porcentajeVendido,
+            ];
+        }
+
+        $totalInvertido = $compra->items->sum('precio_total');
+        $totalIngresos  = array_sum(array_column($rentabilidad, 'ingresos_generados'));
+        $gananciTotal   = $totalIngresos - $totalInvertido;
+        $margenTotal    = $totalInvertido > 0 ? ($gananciTotal / $totalInvertido) * 100 : 0;
+
+        $totalesRentabilidad = [
+            'total_invertido' => $totalInvertido,
+            'total_ingresos'  => $totalIngresos,
+            'ganancia_total'  => $gananciTotal,
+            'margen_total'    => $margenTotal,
+        ];
+
+        return view('compras.show', compact('compra', 'rentabilidad', 'totalesRentabilidad'));
     }
 
     public function edit(Compra $compra)
@@ -88,18 +140,20 @@ class CompraController extends Controller
 
     public function update(CompraRequest $request, Compra $compra)
     {
-        $compra->update([
-            'fecha'        => $request->fecha,
-            'observaciones' => $request->observaciones,
-        ]);
+        DB::transaction(function () use ($request, $compra) {
+            $compra->update([
+                'fecha'        => $request->fecha,
+                'observaciones' => $request->observaciones,
+            ]);
 
-        // Delete existing items — observer decrements stock for each
-        $compra->items->each->delete();
+            // Delete existing items — observer decrements stock for each
+            $compra->items->each->delete();
 
-        // Create new items — observer increments stock for each
-        foreach ($request->input('items', []) as $itemData) {
-            $this->crearItem($compra->id, $itemData);
-        }
+            // Create new items — observer increments stock for each
+            foreach ($request->input('items', []) as $itemData) {
+                $this->crearItem($compra->id, $itemData);
+            }
+        });
 
         return redirect()->route('compras.index')->with('success', 'Compra actualizada correctamente.');
     }

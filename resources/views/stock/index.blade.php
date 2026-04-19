@@ -2,7 +2,7 @@
 
 @section('content')
 
-<div class="flex items-center justify-between mb-6">
+<div class="flex flex-wrap items-start sm:items-center justify-between gap-3 mb-6">
     <div>
         <h1 class="text-2xl font-bold text-gray-900">Stock</h1>
         <p class="text-sm text-gray-500 mt-0.5">Unidades disponibles por producto</p>

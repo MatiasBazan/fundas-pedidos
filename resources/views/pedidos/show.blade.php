@@ -28,6 +28,7 @@
                 Productos
             </h2>
         </div>
+        <div class="overflow-x-auto">
         <table class="w-full text-sm">
             <thead>
                 <tr class="border-b border-gray-50">
@@ -61,6 +62,7 @@
                 </tr>
             </tfoot>
         </table>
+        </div>
     </div>
 
     {{-- Cliente --}}
@@ -71,7 +73,7 @@
                 Cliente
             </h2>
         </div>
-        <div class="grid grid-cols-2 divide-x divide-gray-50">
+        <div class="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-gray-50">
             <div class="px-6 py-4">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Nombre</p>
                 <p class="text-gray-900 font-medium">{{ $pedido->nombre }}</p>
@@ -91,7 +93,7 @@
                 Estados
             </h2>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-3 divide-x divide-gray-50">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-gray-50">
             <div class="px-6 py-4">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Pedido</p>
                 <x-badge-estado-pedido :estado="$pedido->estado_pedido" />
@@ -134,7 +136,5 @@
     </div>
 
 </div>
-
-<x-delete-modal />
 
 @endsection

@@ -11,6 +11,11 @@
 </head>
 <body class="bg-[#FFF0F5] antialiased" x-data="{ sidebarOpen: false }">
 
+{{-- Loading bar --}}
+<div id="df-loader" style="position:fixed;top:0;left:0;right:0;height:3px;z-index:99999;pointer-events:none;opacity:0">
+    <div id="df-loader-bar" style="height:100%;width:0;background:#FF2D6B;border-radius:0 2px 2px 0;box-shadow:0 0 8px #FF2D6B88;transition:none"></div>
+</div>
+
 {{-- Sidebar overlay (mobile) --}}
 <div x-show="sidebarOpen"
      x-transition:enter="transition-opacity ease-out duration-200"
@@ -179,11 +184,135 @@
     </footer>
 </div>
 
+{{-- Delete modal (global) --}}
+<div id="df-delete-modal"
+     class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9998] p-4"
+     onclick="if(event.target===this) closeDeleteModal()">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm transform transition-all">
+        <div class="p-6">
+            <div class="flex items-start gap-4 mb-4">
+                <div class="bg-red-100 p-3 rounded-xl flex-shrink-0">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-gray-900">¿Estás seguro?</h3>
+                    <p class="text-sm text-gray-500 mt-0.5" id="df-delete-info"></p>
+                </div>
+            </div>
+            <p class="text-sm text-gray-500 mb-6 ml-[3.75rem]">Esta acción no se puede deshacer.</p>
+            <div class="flex gap-3">
+                <button onclick="closeDeleteModal()"
+                        class="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition-colors">
+                    Cancelar
+                </button>
+                <button onclick="confirmDelete()"
+                        class="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm">
+                    Sí, eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+/* ── TomSelect ─────────────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('select[data-ts]').forEach(function (el) {
         new TomSelect(el, { create: false, allowEmptyOption: true, maxOptions: 300 });
     });
+});
+
+/* ── Loading bar ───────────────────────────────────────────────────────── */
+var dfStartLoader = (function () {
+    var loader = document.getElementById('df-loader');
+    var bar    = document.getElementById('df-loader-bar');
+    if (!loader || !bar) return function () {};
+
+    function startLoader() {
+        loader.style.transition = 'none';
+        loader.style.opacity    = '1';
+        bar.style.transition    = 'none';
+        bar.style.width         = '0%';
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+                bar.style.transition = 'width 0.3s ease';
+                bar.style.width      = '80%';
+                setTimeout(function () {
+                    bar.style.transition = 'width 4s cubic-bezier(0.05, 0.9, 0.1, 1)';
+                    bar.style.width      = '95%';
+                }, 320);
+            });
+        });
+        try { sessionStorage.setItem('df_nav', '1'); } catch(e) {}
+    }
+
+    function completeLoader() {
+        var was;
+        try { was = sessionStorage.getItem('df_nav'); sessionStorage.removeItem('df_nav'); } catch(e) {}
+        if (!was) return;
+        bar.style.transition = 'width 0.15s ease';
+        bar.style.width      = '100%';
+        setTimeout(function () {
+            loader.style.transition = 'opacity 0.3s ease';
+            loader.style.opacity    = '0';
+            setTimeout(function () {
+                bar.style.transition    = 'none';
+                bar.style.width         = '0%';
+                loader.style.transition = '';
+            }, 300);
+        }, 150);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', completeLoader);
+    } else {
+        completeLoader();
+    }
+
+    document.addEventListener('click', function (e) {
+        var a = e.target.closest('a[href]');
+        if (!a) return;
+        var h = a.href || '';
+        if (!h
+            || a.target === '_blank'
+            || h.startsWith('javascript')
+            || h.startsWith('mailto')
+            || h.indexOf(location.origin) !== 0
+            || h.split('#')[0] === location.href.split('#')[0]) return;
+        startLoader();
+    }, true);
+
+    document.addEventListener('submit', function () {
+        startLoader();
+    }, true);
+
+    return startLoader;
+})();
+
+/* ── Delete modal ──────────────────────────────────────────────────────── */
+var _deleteForm = null;
+
+function showDeleteModal(form, info) {
+    _deleteForm = form;
+    document.getElementById('df-delete-info').textContent = info || '';
+    document.getElementById('df-delete-modal').classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+    document.getElementById('df-delete-modal').classList.add('hidden');
+    _deleteForm = null;
+}
+
+function confirmDelete() {
+    if (!_deleteForm) return;
+    dfStartLoader();
+    _deleteForm.submit();
+}
+
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeDeleteModal();
 });
 </script>
 </body>
