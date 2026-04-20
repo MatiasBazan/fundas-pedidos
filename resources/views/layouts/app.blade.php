@@ -314,6 +314,13 @@ function confirmDelete() {
 document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') closeDeleteModal();
 });
+
+/* ── Bloquear scroll en inputs numéricos ──────────────────────────────── */
+document.addEventListener('wheel', function (e) {
+    if (document.activeElement && document.activeElement.type === 'number') {
+        document.activeElement.blur();
+    }
+}, { passive: true });
 </script>
 </body>
 </html>

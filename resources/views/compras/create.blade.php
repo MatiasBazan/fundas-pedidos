@@ -52,8 +52,8 @@
         <template x-for="(item, index) in items" :key="index">
             <div class="border border-gray-100 rounded-xl p-4 space-y-3 bg-gray-50/40">
 
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
+                <div class="flex flex-wrap items-center justify-between gap-y-2">
+                    <div class="flex flex-wrap items-center gap-2">
                         <span class="text-xs font-bold text-gray-500 uppercase tracking-wide" x-text="'Item ' + (index + 1)"></span>
                         <div class="flex items-center gap-1.5">
                             <button type="button"
