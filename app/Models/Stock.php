@@ -14,4 +14,14 @@ class Stock extends Model
         'nombre_disenio',
         'cantidad',
     ];
+
+    public function pedidoItems()
+    {
+        return $this->hasMany(PedidoItem::class);
+    }
+
+    public function stockMovements()
+    {
+        return $this->hasMany(StockMovement::class);
+    }
 }

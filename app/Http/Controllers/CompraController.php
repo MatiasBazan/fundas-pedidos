@@ -7,6 +7,7 @@ use App\Models\CompraItem;
 use App\Models\Marca;
 use App\Models\Modelo;
 use App\Models\PedidoItem;
+use App\Models\Stock;
 use App\Http\Requests\CompraRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,9 +17,12 @@ class CompraController extends Controller
 {
     public function index(Request $request)
     {
+        $buscarModelo = $request->modelo_celular ? addcslashes($request->modelo_celular, '%_') : null;
+        $buscarDisenio = $request->nombre_disenio ? addcslashes($request->nombre_disenio, '%_') : null;
+
         $itemQuery = CompraItem::query()
-            ->when($request->modelo_celular, fn($q, $v) => $q->where('modelo_celular', 'like', "%{$v}%"))
-            ->when($request->nombre_disenio,  fn($q, $v) => $q->where('nombre_disenio',  'like', "%{$v}%"));
+            ->when($buscarModelo, fn($q, $v) => $q->where('modelo_celular', 'like', "%{$v}%"))
+            ->when($buscarDisenio,  fn($q, $v) => $q->where('nombre_disenio',  'like', "%{$v}%"));
 
         $totalUnidades  = (clone $itemQuery)->sum('cantidad');
         $totalInvertido = (clone $itemQuery)->sum('precio_total');
@@ -27,11 +31,11 @@ class CompraController extends Controller
             ->withSum('items', 'cantidad')
             ->withSum('items', 'precio_total');
 
-        if ($request->modelo_celular) {
-            $comprasQuery->whereHas('items', fn($q) => $q->where('modelo_celular', 'like', "%{$request->modelo_celular}%"));
+        if ($buscarModelo) {
+            $comprasQuery->whereHas('items', fn($q) => $q->where('modelo_celular', 'like', "%{$buscarModelo}%"));
         }
-        if ($request->nombre_disenio) {
-            $comprasQuery->whereHas('items', fn($q) => $q->where('nombre_disenio', 'like', "%{$request->nombre_disenio}%"));
+        if ($buscarDisenio) {
+            $comprasQuery->whereHas('items', fn($q) => $q->where('nombre_disenio', 'like', "%{$buscarDisenio}%"));
         }
 
         $compras = $comprasQuery->latest()->paginate(20)->withQueryString();
@@ -77,11 +81,30 @@ class CompraController extends Controller
     {
         $compra->load('items');
 
+        $keys = $compra->items->map(fn($i) => ['modelo' => $i->modelo_celular, 'disenio' => $i->nombre_disenio])->toArray();
+
+        $ventasPorItem = [];
+        if (!empty($keys)) {
+            $ventas = PedidoItem::where(function ($q) use ($keys) {
+                foreach ($keys as $key) {
+                    $q->orWhere(fn($sq) => $sq
+                        ->where('modelo_celular', $key['modelo'])
+                        ->where('nombre_disenio', $key['disenio'])
+                    );
+                }
+            })->get();
+
+            foreach ($keys as $key) {
+                $ventasPorItem["{$key['modelo']}|{$key['disenio']}"] = $ventas
+                    ->where('modelo_celular', $key['modelo'])
+                    ->where('nombre_disenio', $key['disenio']);
+            }
+        }
+
         $rentabilidad = [];
         foreach ($compra->items as $item) {
-            $ventas = PedidoItem::where('modelo_celular', $item->modelo_celular)
-                ->where('nombre_disenio', $item->nombre_disenio)
-                ->get();
+            $key = "{$item->modelo_celular}|{$item->nombre_disenio}";
+            $ventas = $ventasPorItem[$key] ?? collect();
 
             $cantidadVendida  = $ventas->sum('cantidad');
             $ingresosGenerados = $ventas->sum('precio_total');
@@ -140,16 +163,27 @@ class CompraController extends Controller
 
     public function update(CompraRequest $request, Compra $compra)
     {
+        $compra->load('items');
+
+        foreach ($compra->items as $item) {
+            $stock = Stock::where('categoria', $item->categoria)
+                ->where('modelo_celular', $item->modelo_celular)
+                ->where('nombre_disenio', $item->nombre_disenio)
+                ->first();
+
+            if ($stock && $stock->cantidad < $item->cantidad) {
+                return back()->withErrors(['compra' => "No se puede actualizar: el producto \"{$item->nombre_disenio}\" ya fue vendido y no hay stock suficiente para devolver."]);
+            }
+        }
+
         DB::transaction(function () use ($request, $compra) {
             $compra->update([
                 'fecha'        => $request->fecha,
                 'observaciones' => $request->observaciones,
             ]);
 
-            // Delete existing items — observer decrements stock for each
             $compra->items->each->delete();
 
-            // Create new items — observer increments stock for each
             foreach ($request->input('items', []) as $itemData) {
                 $this->crearItem($compra->id, $itemData);
             }
@@ -160,7 +194,19 @@ class CompraController extends Controller
 
     public function destroy(Compra $compra)
     {
-        // Delete items individually so observer fires for each
+        $compra->load('items');
+
+        foreach ($compra->items as $item) {
+            $stock = Stock::where('categoria', $item->categoria)
+                ->where('modelo_celular', $item->modelo_celular)
+                ->where('nombre_disenio', $item->nombre_disenio)
+                ->first();
+
+            if ($stock && $stock->cantidad < $item->cantidad) {
+                return back()->withErrors(['compra' => "No se puede eliminar: el producto \"{$item->nombre_disenio}\" ya fue vendido y no hay stock suficiente para devolver."]);
+            }
+        }
+
         $compra->items->each->delete();
         $compra->delete();
 

@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Pedido;
 use App\Models\PedidoItem;
 use App\Models\Stock;
+use App\Models\StockMovement;
 use App\Http\Requests\PedidoRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class PedidoController extends Controller
@@ -78,10 +80,14 @@ class PedidoController extends Controller
                     'precio_total'    => $subtotal,
                 ]);
 
+                $cantidadAnterior = $stock->cantidad;
                 $stock->decrement('cantidad', $cantidad);
+                $stock->refresh();
+                $this->registrarMovimiento($stock, 'venta', $cantidad, $cantidadAnterior, $stock->cantidad, 'pedido', $pedido->id);
                 $precioTotal += $subtotal;
             }
 
+            $this->invalidarCacheStock();
             $pedido->update(['precio_total' => round($precioTotal, 2)]);
         });
 
@@ -90,14 +96,14 @@ class PedidoController extends Controller
 
     public function show(Pedido $pedido)
     {
-        abort_if($pedido->user_id !== auth()->id(), 403);
+        $this->authorize('view', $pedido);
         $pedido->load('items');
         return view('pedidos.show', compact('pedido'));
     }
 
     public function edit(Pedido $pedido)
     {
-        abort_if($pedido->user_id !== auth()->id(), 403);
+        $this->authorize('view', $pedido);
 
         $pedido->load('items');
         $usedStockIds = $pedido->items->pluck('stock_id')->filter()->values()->toArray();
@@ -115,7 +121,7 @@ class PedidoController extends Controller
 
     public function update(PedidoRequest $request, Pedido $pedido)
     {
-        abort_if($pedido->user_id !== auth()->id(), 403);
+        $this->authorize('update', $pedido);
 
         $data = $request->validated();
 
@@ -149,7 +155,13 @@ class PedidoController extends Controller
             // Devolver stock de items actuales
             foreach ($pedido->items as $item) {
                 if ($item->stock_id) {
-                    Stock::find($item->stock_id)?->increment('cantidad', $item->cantidad);
+                    $stock = Stock::find($item->stock_id);
+                    if ($stock) {
+                        $cantidadAnterior = $stock->cantidad;
+                        $stock->increment('cantidad', $item->cantidad);
+                        $stock->refresh();
+                        $this->registrarMovimiento($stock, 'venta_cancelada', $item->cantidad, $cantidadAnterior, $stock->cantidad, 'pedido', $pedido->id);
+                    }
                 }
             }
 
@@ -173,7 +185,10 @@ class PedidoController extends Controller
                     'precio_total'    => $subtotal,
                 ]);
 
+                $cantidadAnterior = $stock->cantidad;
                 $stock->decrement('cantidad', $cantidad);
+                $stock->refresh();
+                $this->registrarMovimiento($stock, 'venta', $cantidad, $cantidadAnterior, $stock->cantidad, 'pedido', $pedido->id);
                 $precioTotal += $subtotal;
             }
 
@@ -185,6 +200,7 @@ class PedidoController extends Controller
                 'tipo_pago'     => $data['tipo_pago'],
                 'precio_total'  => round($precioTotal, 2),
             ]);
+            $this->invalidarCacheStock();
         });
 
         return redirect()->route('pedidos.index')->with('success', 'Venta actualizada correctamente.');
@@ -192,18 +208,25 @@ class PedidoController extends Controller
 
     public function destroy(Pedido $pedido)
     {
-        abort_if($pedido->user_id !== auth()->id(), 403);
+        $this->authorize('delete', $pedido);
 
         $pedido->load('items');
 
         DB::transaction(function () use ($pedido) {
             foreach ($pedido->items as $item) {
                 if ($item->stock_id) {
-                    Stock::find($item->stock_id)?->increment('cantidad', $item->cantidad);
+                    $stock = Stock::find($item->stock_id);
+                    if ($stock) {
+                        $cantidadAnterior = $stock->cantidad;
+                        $stock->increment('cantidad', $item->cantidad);
+                        $stock->refresh();
+                        $this->registrarMovimiento($stock, 'venta_cancelada', $item->cantidad, $cantidadAnterior, $stock->cantidad, 'pedido', $pedido->id);
+                    }
                 }
             }
             $pedido->items()->delete();
             $pedido->delete();
+            $this->invalidarCacheStock();
         });
 
         return redirect()->route('pedidos.index')->with('success', 'Venta eliminada correctamente.');
@@ -252,41 +275,67 @@ class PedidoController extends Controller
 
     private function stockDisponibleSeparado(array $includeStockIds = []): array
     {
-        $base = Stock::query()
-            ->where(fn($q) => $q
-                ->where('cantidad', '>', 0)
-                ->when($includeStockIds, fn($q) => $q->orWhereIn('id', $includeStockIds))
-            );
+        $cacheKey = 'stock_disponible_' . (empty($includeStockIds) ? 'all' : implode('_', $includeStockIds));
 
-        $fondas = (clone $base)
-            ->where('categoria', 'funda')
-            ->orderBy('modelo_celular')
-            ->orderBy('nombre_disenio')
-            ->get();
+        return Cache::remember($cacheKey, now()->addMinutes(1), function () use ($includeStockIds) {
+            $base = Stock::query()
+                ->where(fn($q) => $q
+                    ->where('cantidad', '>', 0)
+                    ->when($includeStockIds, fn($q) => $q->orWhereIn('id', $includeStockIds))
+                );
 
-        $accesorios = (clone $base)
-            ->where('categoria', 'accesorio')
-            ->orderBy('nombre_disenio')
-            ->get();
+            $fondas = (clone $base)
+                ->where('categoria', 'funda')
+                ->orderBy('modelo_celular')
+                ->orderBy('nombre_disenio')
+                ->get();
 
-        return [$fondas, $accesorios];
+            $accesorios = (clone $base)
+                ->where('categoria', 'accesorio')
+                ->orderBy('nombre_disenio')
+                ->get();
+
+            return [$fondas, $accesorios];
+        });
     }
 
     private function applyFilters(\Illuminate\Database\Eloquent\Builder $query, Request $request): \Illuminate\Database\Eloquent\Builder
     {
+        if (!auth()->user()->isAdmin()) {
+            $query->where('user_id', auth()->id());
+        }
+
         return $query
-            ->where('user_id', auth()->id())
             ->when($request->estado_pedido, fn($q, $v) => $q->where('estado_pedido', $v))
             ->when($request->estado_pago,   fn($q, $v) => $q->where('estado_pago', $v))
             ->when($request->tipo_pago,     fn($q, $v) => $q->where('tipo_pago', $v))
             ->when($request->buscar,        fn($q, $v) => $q->where(function ($q) use ($v) {
-                $q->where('nombre', 'like', "%{$v}%")
-                  ->orWhere('apellido', 'like', "%{$v}%")
+                $buscar = addcslashes($v, '%_');
+                $q->where('nombre', 'like', "%{$buscar}%")
+                  ->orWhere('apellido', 'like', "%{$buscar}%")
                   ->orWhereHas('items', fn($qi) => $qi
-                      ->where('nombre_disenio', 'like', "%{$v}%")
-                      ->orWhere('modelo_celular', 'like', "%{$v}%")
+                      ->where('nombre_disenio', 'like', "%{$buscar}%")
+                      ->orWhere('modelo_celular', 'like', "%{$buscar}%")
                   );
             }));
+    }
+
+private function registrarMovimiento(Stock $stock, string $tipo, int $cantidad, int $cantidadAnterior, int $cantidadNueva, ?string $referenciaTipo = null, ?int $referenciaId = null): void
+    {
+        StockMovement::create([
+            'stock_id'         => $stock->id,
+            'tipo'            => $tipo,
+            'cantidad'        => $cantidad,
+            'cantidad_anterior' => $cantidadAnterior,
+            'cantidad_nueva'   => $cantidadNueva,
+            'referencia_tipo' => $referenciaTipo,
+            'referencia_id'  => $referenciaId,
+        ]);
+    }
+
+private function invalidarCacheStock(): void
+    {
+        Cache::forget('stock_disponible_all');
     }
 
     public function dashboard()

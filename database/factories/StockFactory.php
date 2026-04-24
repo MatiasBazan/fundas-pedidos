@@ -11,7 +11,8 @@ class StockFactory extends Factory
         return [
             'modelo_celular' => fake()->unique()->lexify('Brand ??? Model ???'),
             'nombre_disenio' => fake()->lexify('Diseño ???'),
-            'cantidad'       => 5,
+            'categoria'     => 'funda',
+            'cantidad'      => 5,
         ];
     }
 }

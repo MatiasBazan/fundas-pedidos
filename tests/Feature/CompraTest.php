@@ -32,6 +32,7 @@ class CompraTest extends TestCase
                 'fecha' => '2026-04-16',
                 'items' => [
                     [
+                        'categoria'       => 'funda',
                         'marca_id'        => $marca->id,
                         'modelo_id'       => $modelo1->id,
                         'nombre_disenio'  => 'Marmol blanco',
@@ -39,6 +40,7 @@ class CompraTest extends TestCase
                         'precio_unitario' => 250,
                     ],
                     [
+                        'categoria'       => 'funda',
                         'marca_id'        => $marca->id,
                         'modelo_id'       => $modelo2->id,
                         'nombre_disenio'  => 'Carbono negro',
@@ -75,6 +77,7 @@ class CompraTest extends TestCase
             ->post(route('compras.store'), [
                 'fecha' => '2026-04-16',
                 'items' => [[
+                    'categoria'       => 'funda',
                     'marca_id'        => $marca->id,
                     'modelo_id'       => $modelo->id,
                     'nombre_disenio'  => 'Floral',
@@ -100,6 +103,7 @@ class CompraTest extends TestCase
                 'fecha' => '2026-04-16',
                 'items' => [
                     [
+                        'categoria'       => 'funda',
                         'marca_id'        => $marca->id,
                         'modelo_id'       => $modelo->id,
                         'nombre_disenio'  => 'Diseño A',
@@ -107,6 +111,7 @@ class CompraTest extends TestCase
                         'precio_unitario' => 100,
                     ],
                     [
+                        'categoria'       => 'funda',
                         'marca_id'        => $marca->id,
                         'modelo_id'       => $modelo->id,
                         'nombre_disenio'  => 'Diseño B',
@@ -125,5 +130,55 @@ class CompraTest extends TestCase
 
         $this->assertDatabaseCount('compra_items', 0);
         $this->assertDatabaseMissing('compras', ['id' => $compra->id]);
+    }
+
+    public function test_crear_compra_con_accesorio(): void
+    {
+        $this->actingAs($this->admin)
+            ->post(route('compras.store'), [
+                'fecha' => '2026-04-16',
+                'items' => [[
+                    'categoria'       => 'accesorio',
+                    'nombre_disenio'  => 'Protector pantalla',
+                    'cantidad'        => 10,
+                    'precio_unitario' => 50,
+                ]],
+            ])
+            ->assertRedirect(route('compras.index'));
+
+        $this->assertDatabaseHas('stocks', [
+            'categoria'      => 'accesorio',
+            'modelo_celular'  => 'Accesorio',
+            'nombre_disenio'  => 'Protector Pantalla',
+            'cantidad'        => 10,
+        ]);
+    }
+
+    public function test_compra_con_marca_nueva(): void
+    {
+        $marca  = Marca::factory()->create(['nombre' => 'OPPO']);
+
+        $this->actingAs($this->admin)
+            ->post(route('compras.store'), [
+                'fecha' => '2026-04-16',
+                'items' => [[
+                    'categoria'       => 'funda',
+                    'marca_nueva'     => 'OPPO',
+                    'modelo_nuevo'    => ' Reno 12',
+                    'nombre_disenio'  => 'Marmol',
+                    'cantidad'        => 5,
+                    'precio_unitario' => 180,
+                ]],
+            ])
+            ->assertRedirect(route('compras.index'));
+
+        $this->assertDatabaseHas('marcas', [
+            'nombre' => 'OPPO',
+        ]);
+
+        $this->assertDatabaseHas('modelos', [
+            'marca_id' =>Marca::where('nombre', 'OPPO')->first()->id,
+            'nombre'   => 'Reno 12',
+        ]);
     }
 }

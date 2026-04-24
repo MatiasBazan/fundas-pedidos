@@ -28,6 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('admin')->group(function () {
         Route::resource('compras', CompraController::class);
         Route::get('/stock', [StockController::class, 'index'])->name('stock.index');
+        Route::delete('/stock/{stock}', [StockController::class, 'destroy'])->name('stock.destroy');
         Route::get('/estadisticas', [StatsController::class, 'index'])->name('stats.index');
 
         Route::resource('users', UserController::class)->except(['show']);

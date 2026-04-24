@@ -4,19 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Models\Stock;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class StockController extends Controller
 {
     public function index(Request $request)
     {
-        $modelos = Stock::where('categoria', 'funda')
-            ->distinct()->orderBy('modelo_celular')->pluck('modelo_celular');
+        $modelos = Cache::remember('stock_filter_modelos', now()->addMinutes(5), function () {
+            return Stock::where('categoria', 'funda')
+                ->distinct()->orderBy('modelo_celular')->pluck('modelo_celular');
+        });
 
-        $disenios = Stock::where('categoria', 'funda')
-            ->distinct()->orderBy('nombre_disenio')->pluck('nombre_disenio');
+        $disenios = Cache::remember('stock_filter_disenios', now()->addMinutes(5), function () {
+            return Stock::where('categoria', 'funda')
+                ->distinct()->orderBy('nombre_disenio')->pluck('nombre_disenio');
+        });
 
-        $nombresAccesorio = Stock::where('categoria', 'accesorio')
-            ->distinct()->orderBy('nombre_disenio')->pluck('nombre_disenio');
+        $nombresAccesorio = Cache::remember('stock_filter_accesorios', now()->addMinutes(5), function () {
+            return Stock::where('categoria', 'accesorio')
+                ->distinct()->orderBy('nombre_disenio')->pluck('nombre_disenio');
+        });
 
         $base = Stock::query()
             ->when($request->nombre_disenio, fn($q, $v) => $q->where('nombre_disenio', $v));
@@ -36,5 +43,20 @@ class StockController extends Controller
             ->withQueryString();
 
         return view('stock.index', compact('fondas', 'accesorios', 'modelos', 'disenios', 'nombresAccesorio'));
+    }
+
+    public function destroy(Stock $stock)
+    {
+        // Verificar si el producto tiene pedidos asociados
+        if ($stock->pedidoItems()->exists()) {
+            return redirect()->route('stock.index')
+                ->with('error', "No se puede eliminar «{$stock->nombre_disenio}» porque tiene pedidos asociados.");
+        }
+
+        $nombre = $stock->nombre_disenio;
+        $stock->delete();
+
+        return redirect()->route('stock.index')
+            ->with('success', "Producto «{$nombre}» eliminado del stock.");
     }
 }

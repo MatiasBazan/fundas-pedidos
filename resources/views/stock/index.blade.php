@@ -122,14 +122,23 @@
     <div class="block md:hidden space-y-3">
         @forelse($fondas as $stock)
             @php [$cls, $dot, $label] = $stockBadge($stock->cantidad) @endphp
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3.5 flex items-center justify-between">
-                <div>
-                    <p class="font-semibold text-gray-900 text-sm">{{ $stock->nombre_disenio }}</p>
-                    <p class="text-xs text-gray-400 mt-0.5">{{ $stock->modelo_celular }}</p>
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3.5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-semibold text-gray-900 text-sm">{{ $stock->nombre_disenio }}</p>
+                        <p class="text-xs text-gray-400 mt-0.5">{{ $stock->modelo_celular }}</p>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 border px-3 py-1.5 rounded-full text-sm font-bold {{ $cls }}">
+                        <span class="w-1.5 h-1.5 rounded-full {{ $dot }}"></span> {{ $label }}
+                    </span>
                 </div>
-                <span class="inline-flex items-center gap-1.5 border px-3 py-1.5 rounded-full text-sm font-bold {{ $cls }}">
-                    <span class="w-1.5 h-1.5 rounded-full {{ $dot }}"></span> {{ $label }}
-                </span>
+                <div class="flex justify-end pt-2 mt-2 border-t border-gray-100">
+                    <form method="POST" action="{{ route('stock.destroy', $stock) }}">
+                        @csrf @method('DELETE')
+                        <button type="button" onclick="showDeleteModal(this.closest('form'), '{{ $stock->nombre_disenio }} ({{ $stock->modelo_celular }})')"
+                                class="py-1.5 px-3 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">Eliminar</button>
+                    </form>
+                </div>
             </div>
         @empty
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center text-gray-400 text-sm">Sin fundas en stock</div>
@@ -147,6 +156,7 @@
                     <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Diseño</th>
                     <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Cantidad</th>
                     <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Actualizado</th>
+                    <th class="px-5 py-3.5 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Acciones</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
@@ -162,10 +172,21 @@
                         </span>
                     </td>
                     <td class="px-5 py-4 text-gray-400 text-xs">{{ $stock->updated_at->format('d/m/Y H:i') }}</td>
+                    <td class="px-5 py-4">
+                        <div class="flex items-center justify-end">
+                            <form method="POST" action="{{ route('stock.destroy', $stock) }}">
+                                @csrf @method('DELETE')
+                                <button type="button" onclick="showDeleteModal(this.closest('form'), '{{ $stock->nombre_disenio }} ({{ $stock->modelo_celular }})')"
+                                        class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="px-5 py-12 text-center text-gray-400 text-sm">Sin fundas en stock</td>
+                    <td colspan="6" class="px-5 py-12 text-center text-gray-400 text-sm">Sin fundas en stock</td>
                 </tr>
             @endforelse
             </tbody>
@@ -189,14 +210,23 @@
     <div class="block md:hidden space-y-3">
         @forelse($accesorios as $stock)
             @php [$cls, $dot, $label] = $stockBadge($stock->cantidad) @endphp
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3.5 flex items-center justify-between">
-                <div>
-                    <p class="font-semibold text-gray-900 text-sm">{{ $stock->nombre_disenio }}</p>
-                    <span class="text-xs bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded font-medium">Accesorio</span>
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3.5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-semibold text-gray-900 text-sm">{{ $stock->nombre_disenio }}</p>
+                        <span class="text-xs bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded font-medium">Accesorio</span>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 border px-3 py-1.5 rounded-full text-sm font-bold {{ $cls }}">
+                        <span class="w-1.5 h-1.5 rounded-full {{ $dot }}"></span> {{ $label }}
+                    </span>
                 </div>
-                <span class="inline-flex items-center gap-1.5 border px-3 py-1.5 rounded-full text-sm font-bold {{ $cls }}">
-                    <span class="w-1.5 h-1.5 rounded-full {{ $dot }}"></span> {{ $label }}
-                </span>
+                <div class="flex justify-end pt-2 mt-2 border-t border-gray-100">
+                    <form method="POST" action="{{ route('stock.destroy', $stock) }}">
+                        @csrf @method('DELETE')
+                        <button type="button" onclick="showDeleteModal(this.closest('form'), '{{ $stock->nombre_disenio }}')"
+                                class="py-1.5 px-3 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">Eliminar</button>
+                    </form>
+                </div>
             </div>
         @empty
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center text-gray-400 text-sm">Sin accesorios en stock</div>
@@ -213,6 +243,7 @@
                     <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Nombre del accesorio</th>
                     <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Cantidad</th>
                     <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Actualizado</th>
+                    <th class="px-5 py-3.5 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Acciones</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
@@ -227,10 +258,21 @@
                         </span>
                     </td>
                     <td class="px-5 py-4 text-gray-400 text-xs">{{ $stock->updated_at->format('d/m/Y H:i') }}</td>
+                    <td class="px-5 py-4">
+                        <div class="flex items-center justify-end">
+                            <form method="POST" action="{{ route('stock.destroy', $stock) }}">
+                                @csrf @method('DELETE')
+                                <button type="button" onclick="showDeleteModal(this.closest('form'), '{{ $stock->nombre_disenio }}')"
+                                        class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="4" class="px-5 py-12 text-center text-gray-400 text-sm">Sin accesorios en stock</td>
+                    <td colspan="5" class="px-5 py-12 text-center text-gray-400 text-sm">Sin accesorios en stock</td>
                 </tr>
             @endforelse
             </tbody>

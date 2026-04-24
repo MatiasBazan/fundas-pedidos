@@ -26,10 +26,13 @@ class PedidoTest extends TestCase
 
         $this->actingAs($this->admin)
             ->post(route('pedidos.store'), [
-                'stock_id'      => $stock->id,
+                'items' => [[
+                    'stock_id'        => $stock->id,
+                    'cantidad'        => 1,
+                    'precio_unitario' => 3500,
+                ]],
                 'nombre'        => 'Maria',
                 'apellido'      => 'Gonzalez',
-                'precio'        => 3500,
                 'estado_pedido' => 'disponible',
                 'estado_pago'   => 'pagado',
                 'tipo_pago'     => 'efectivo',
@@ -37,11 +40,17 @@ class PedidoTest extends TestCase
             ->assertRedirect(route('pedidos.index'));
 
         $this->assertDatabaseHas('pedidos', [
-            'stock_id' => $stock->id,
             'nombre'   => 'Maria',
             'apellido' => 'Gonzalez',
-            'precio'   => 3500,
             'user_id'  => $this->admin->id,
+        ]);
+
+        $pedido = Pedido::first();
+        $this->assertDatabaseHas('pedido_items', [
+            'pedido_id'      => $pedido->id,
+            'stock_id'      => $stock->id,
+            'cantidad'      => 1,
+            'precio_unitario' => 3500,
         ]);
     }
 
@@ -49,7 +58,7 @@ class PedidoTest extends TestCase
     {
         $this->actingAs($this->admin)
             ->post(route('pedidos.store'), [])
-            ->assertSessionHasErrors(['stock_id', 'nombre', 'apellido', 'precio']);
+            ->assertSessionHasErrors(['items', 'nombre', 'apellido', 'estado_pedido', 'estado_pago']);
     }
 
     public function test_actualizar_pedido(): void
@@ -57,26 +66,30 @@ class PedidoTest extends TestCase
         $stock1 = Stock::factory()->create(['cantidad' => 2]);
         $stock2 = Stock::factory()->create(['cantidad' => 2]);
 
-        // Crear pedido → stock1.cantidad baja a 1
         $this->actingAs($this->admin)
             ->post(route('pedidos.store'), [
-                'stock_id'      => $stock1->id,
+                'items' => [[
+                    'stock_id'        => $stock1->id,
+                    'cantidad'        => 1,
+                    'precio_unitario' => 2000,
+                ]],
                 'nombre'        => 'Luis',
                 'apellido'      => 'Martinez',
-                'precio'        => 2000,
                 'estado_pedido' => 'disponible',
                 'estado_pago'   => 'no_pagado',
             ]);
 
         $pedido = Pedido::first();
 
-        // Actualizar cambiando a stock2
         $this->actingAs($this->admin)
             ->put(route('pedidos.update', $pedido), [
-                'stock_id'      => $stock2->id,
+                'items' => [[
+                    'stock_id'        => $stock2->id,
+                    'cantidad'        => 1,
+                    'precio_unitario' => 2500,
+                ]],
                 'nombre'        => 'Luis',
                 'apellido'      => 'Martinez',
-                'precio'        => 2500,
                 'estado_pedido' => 'entregado',
                 'estado_pago'   => 'pagado',
                 'tipo_pago'     => 'transferencia',
@@ -85,14 +98,13 @@ class PedidoTest extends TestCase
 
         $this->assertDatabaseHas('pedidos', [
             'id'            => $pedido->id,
-            'precio'        => 2500,
             'estado_pedido' => 'entregado',
-            'stock_id'      => $stock2->id,
         ]);
 
-        // stock1 restaurado, stock2 decrementado
-        $this->assertDatabaseHas('stocks', ['id' => $stock1->id, 'cantidad' => 2]);
-        $this->assertDatabaseHas('stocks', ['id' => $stock2->id, 'cantidad' => 1]);
+        $stock1->refresh();
+        $stock2->refresh();
+        $this->assertEquals(2, $stock1->cantidad);
+        $this->assertEquals(1, $stock2->cantidad);
     }
 
     public function test_eliminar_pedido(): void
@@ -101,10 +113,13 @@ class PedidoTest extends TestCase
 
         $this->actingAs($this->admin)
             ->post(route('pedidos.store'), [
-                'stock_id'      => $stock->id,
+                'items' => [[
+                    'stock_id'        => $stock->id,
+                    'cantidad'        => 1,
+                    'precio_unitario' => 1800,
+                ]],
                 'nombre'        => 'Pedro',
                 'apellido'      => 'Ramirez',
-                'precio'        => 1800,
                 'estado_pedido' => 'disponible',
                 'estado_pago'   => 'no_pagado',
             ]);
@@ -116,5 +131,93 @@ class PedidoTest extends TestCase
             ->assertRedirect(route('pedidos.index'));
 
         $this->assertSoftDeleted('pedidos', ['id' => $pedido->id]);
+    }
+
+    public function test_admin_puede_ver_pedido_de_otro_usuario(): void
+    {
+        $user = User::factory()->create();
+        $stock = Stock::factory()->create(['cantidad' => 5]);
+
+        $this->actingAs($user)
+            ->post(route('pedidos.store'), [
+                'items' => [[
+                    'stock_id'        => $stock->id,
+                    'cantidad'        => 1,
+                    'precio_unitario' => 2000,
+                ]],
+                'nombre'        => 'Usuario',
+                'apellido'      => 'Normal',
+                'estado_pedido' => 'disponible',
+                'estado_pago'   => 'no_pagado',
+            ]);
+
+        $pedido = Pedido::first();
+
+        $this->actingAs($this->admin)
+            ->get(route('pedidos.show', $pedido))
+            ->assertStatus(200);
+    }
+
+    public function test_usuario_no_puede_ver_pedido_de_otro(): void
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        $stock = Stock::factory()->create(['cantidad' => 5]);
+
+        $this->actingAs($user1)
+            ->post(route('pedidos.store'), [
+                'items' => [[
+                    'stock_id'        => $stock->id,
+                    'cantidad'        => 1,
+                    'precio_unitario' => 2000,
+                ]],
+                'nombre'        => 'Usuario1',
+                'apellido'      => 'Test',
+                'estado_pedido' => 'disponible',
+                'estado_pago'   => 'no_pagado',
+            ]);
+
+        $pedido = Pedido::first();
+
+        $this->actingAs($user2)
+            ->get(route('pedidos.show', $pedido))
+            ->assertStatus(403);
+    }
+
+    public function test_pedido_con_multiples_items(): void
+    {
+        $stock1 = Stock::factory()->create(['cantidad' => 5, 'nombre_disenio' => 'Diseño 1', 'modelo_celular' => 'Samsung A54']);
+        $stock2 = Stock::factory()->create(['cantidad' => 3, 'nombre_disenio' => 'Diseño 2', 'modelo_celular' => 'iPhone 15']);
+
+        $this->actingAs($this->admin)
+            ->post(route('pedidos.store'), [
+                'items' => [
+                    [
+                        'stock_id'        => $stock1->id,
+                        'cantidad'        => 2,
+                        'precio_unitario' => 2000,
+                    ],
+                    [
+                        'stock_id'        => $stock2->id,
+                        'cantidad'        => 1,
+                        'precio_unitario' => 3500,
+                    ],
+                ],
+                'nombre'        => 'Multi',
+                'apellido'      => 'Items',
+                'estado_pedido' => 'disponible',
+                'estado_pago'   => 'pagado',
+                'tipo_pago'     => 'efectivo',
+            ])
+            ->assertRedirect(route('pedidos.index'));
+
+        $stock1->refresh();
+        $stock2->refresh();
+
+        $this->assertEquals(3, $stock1->cantidad);
+        $this->assertEquals(2, $stock2->cantidad);
+
+        $pedido = Pedido::first();
+        $this->assertEquals(7500, $pedido->precio_total);
     }
 }
