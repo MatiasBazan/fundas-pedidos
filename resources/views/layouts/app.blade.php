@@ -162,6 +162,99 @@
         @endif
     </header>
 
+    {{-- Daily Bible Verse --}}
+    @php
+        $versiculos = [
+            ['texto' => 'Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito, para que todo aquel que en él cree, no se pierda, mas tenga vida eterna.', 'cita' => 'Juan 3:16'],
+            ['texto' => 'Todo lo puedo en Cristo que me fortalece.', 'cita' => 'Filipenses 4:13'],
+            ['texto' => 'Confía en el Señor con todo tu corazón, y no te apoyes en tu propia prudencia.', 'cita' => 'Proverbios 3:5'],
+            ['texto' => 'El Señor es mi pastor, nada me faltará.', 'cita' => 'Salmos 23:1'],
+            ['texto' => 'Esforzaos y cobrad ánimo; no temáis, ni tengáis miedo, porque Jehová tu Dios es el que va contigo.', 'cita' => 'Deuteronomio 31:6'],
+            ['texto' => 'Mas buscad primeramente el reino de Dios y su justicia, y todas estas cosas os serán añadidas.', 'cita' => 'Mateo 6:33'],
+            ['texto' => 'Jehová te bendiga, y te guarde; Jehová haga resplandecer su rostro sobre ti, y tenga de ti misericordia.', 'cita' => 'Números 6:24-25'],
+            ['texto' => 'Y sabemos que a los que aman a Dios, todas las cosas les ayudan a bien.', 'cita' => 'Romanos 8:28'],
+            ['texto' => 'Venid a mí todos los que estáis trabajados y cargados, y yo os haré descansar.', 'cita' => 'Mateo 11:28'],
+            ['texto' => 'No temas, porque yo estoy contigo; no desmayes, porque yo soy tu Dios que te esfuerzo.', 'cita' => 'Isaías 41:10'],
+            ['texto' => 'Encomienda a Jehová tu camino, y confía en él; y él hará.', 'cita' => 'Salmos 37:5'],
+            ['texto' => 'La paz os dejo, mi paz os doy; yo no os la doy como el mundo la da.', 'cita' => 'Juan 14:27'],
+            ['texto' => 'Clama a mí, y yo te responderé, y te enseñaré cosas grandes y ocultas que tú no conoces.', 'cita' => 'Jeremías 33:3'],
+            ['texto' => 'Porque yo sé los pensamientos que tengo acerca de vosotros, pensamientos de paz, y no de mal.', 'cita' => 'Jeremías 29:11'],
+            ['texto' => 'El ángel del Señor acampa alrededor de los que le temen, y los defiende.', 'cita' => 'Salmos 34:7'],
+            ['texto' => 'Lámpara es a mis pies tu palabra, y lumbrera a mi camino.', 'cita' => 'Salmos 119:105'],
+            ['texto' => 'De cierto, de cierto os digo: El que cree en mí, tiene vida eterna.', 'cita' => 'Juan 6:47'],
+            ['texto' => 'Jehová peleará por vosotros, y vosotros estaréis tranquilos.', 'cita' => 'Éxodo 14:14'],
+            ['texto' => 'Porque donde están dos o tres congregados en mi nombre, allí estoy yo en medio de ellos.', 'cita' => 'Mateo 18:20'],
+            ['texto' => 'El Señor es bueno, fortaleza en el día de la angustia; y conoce a los que en él confían.', 'cita' => 'Nahúm 1:7'],
+            ['texto' => 'Bienaventurados los misericordiosos, porque ellos alcanzarán misericordia.', 'cita' => 'Mateo 5:7'],
+            ['texto' => 'El que habita al abrigo del Altísimo morará bajo la sombra del Omnipotente.', 'cita' => 'Salmos 91:1'],
+            ['texto' => 'Los que esperan en Jehová tendrán nuevas fuerzas; levantarán alas como las águilas.', 'cita' => 'Isaías 40:31'],
+            ['texto' => 'Yo soy el camino, la verdad y la vida; nadie viene al Padre sino por mí.', 'cita' => 'Juan 14:6'],
+            ['texto' => 'Y la paz de Dios, que sobrepasa todo entendimiento, guardará vuestros corazones.', 'cita' => 'Filipenses 4:7'],
+            ['texto' => 'Dad gracias en todo, porque esta es la voluntad de Dios para con vosotros.', 'cita' => 'I Tesalonicenses 5:18'],
+            ['texto' => 'No os ha sobrevenido ninguna tentación que no sea humana; pero fiel es Dios.', 'cita' => 'I Corintios 10:13'],
+            ['texto' => 'Jesús le dijo: Si puedes creer, al que cree todo le es posible.', 'cita' => 'Marcos 9:23'],
+            ['texto' => 'Sean fuertes y valientes. No teman ni se asusten, porque el Señor su Dios siempre los acompañará.', 'cita' => 'Josué 1:9'],
+            ['texto' => 'Echando toda vuestra ansiedad sobre él, porque él tiene cuidado de vosotros.', 'cita' => 'I Pedro 5:7'],
+            ['texto' => 'Dios es nuestro amparo y fortaleza, nuestro pronto auxilio en las tribulaciones.', 'cita' => 'Salmos 46:1'],
+            ['texto' => 'He aquí, yo estoy con vosotros todos los días, hasta el fin del mundo.', 'cita' => 'Mateo 28:20'],
+            ['texto' => 'Pedid, y se os dará; buscad, y hallaréis; llamad, y se os abrirá.', 'cita' => 'Mateo 7:7'],
+            ['texto' => 'El amor es paciente, es bondadoso. El amor no es envidioso ni jactancioso ni orgulloso.', 'cita' => 'I Corintios 13:4'],
+            ['texto' => 'No se amolden al mundo actual, sino sean transformados mediante la renovación de su mente.', 'cita' => 'Romanos 12:2'],
+            ['texto' => 'El Señor es mi luz y mi salvación; ¿de quién temeré?', 'cita' => 'Salmos 27:1'],
+            ['texto' => 'Yo he venido para que tengan vida, y para que la tengan en abundancia.', 'cita' => 'Juan 10:10'],
+            ['texto' => 'El principio de la sabiduría es el temor de Jehová.', 'cita' => 'Proverbios 9:10'],
+            ['texto' => 'Bienaventurados los de limpio corazón, porque ellos verán a Dios.', 'cita' => 'Mateo 5:8'],
+            ['texto' => 'Si Dios es por nosotros, ¿quién contra nosotros?', 'cita' => 'Romanos 8:31'],
+            ['texto' => 'Mira que te mando que te esfuerces y seas valiente; no temas ni desmayes.', 'cita' => 'Josué 1:9'],
+            ['texto' => 'Jehová es mi fortaleza y mi escudo; en él confió mi corazón, y fui ayudado.', 'cita' => 'Salmos 28:7'],
+            ['texto' => 'El gozo del Señor es vuestra fuerza.', 'cita' => 'Nehemías 8:10'],
+            ['texto' => 'Por nada estéis afanosos, sino sean conocidas vuestras peticiones delante de Dios.', 'cita' => 'Filipenses 4:6'],
+            ['texto' => 'Y les enjugará Dios toda lágrima de los ojos; y ya no habrá muerte.', 'cita' => 'Apocalipsis 21:4'],
+            ['texto' => 'Estas cosas os he hablado para que en mí tengáis paz. En el mundo tendréis aflicción; pero confiad, yo he vencido al mundo.', 'cita' => 'Juan 16:33'],
+            ['texto' => 'Amarás al Señor tu Dios con todo tu corazón, y con toda tu alma, y con toda tu mente.', 'cita' => 'Mateo 22:37'],
+            ['texto' => 'Porque el Señor da la sabiduría; de su boca viene el conocimiento y la inteligencia.', 'cita' => 'Proverbios 2:6'],
+            ['texto' => 'Bendito el varón que confía en Jehová, y cuya confianza es Jehová.', 'cita' => 'Jeremías 17:7'],
+            ['texto' => 'Alumbre vuestra luz delante de los hombres, para que vean vuestras buenas obras.', 'cita' => 'Mateo 5:16'],
+            ['texto' => 'Y andad en amor, como también Cristo nos amó.', 'cita' => 'Efesios 5:2'],
+            ['texto' => 'El Señor cumplirá en mí su propósito; tu misericordia, oh Señor, es para siempre.', 'cita' => 'Salmos 138:8'],
+            ['texto' => 'Mejor es el fin del negocio que su principio; mejor es el sufrido de espíritu que el altivo.', 'cita' => 'Eclesiastés 7:8'],
+            ['texto' => 'Bueno es Jehová a los que en él esperan, al alma que le busca.', 'cita' => 'Lamentaciones 3:25'],
+            ['texto' => 'Gustad, y ved que es bueno Jehová; dichoso el hombre que confía en él.', 'cita' => 'Salmos 34:8'],
+            ['texto' => 'Todo tiene su tiempo, y todo lo que se quiere debajo del cielo tiene su hora.', 'cita' => 'Eclesiastés 3:1'],
+            ['texto' => 'He peleado la buena batalla, he acabado la carrera, he guardado la fe.', 'cita' => 'II Timoteo 4:7'],
+            ['texto' => 'Sobre toda cosa guardada, guarda tu corazón; porque de él mana la vida.', 'cita' => 'Proverbios 4:23'],
+            ['texto' => 'El que comenzó en vosotros la buena obra, la perfeccionará hasta el día de Jesucristo.', 'cita' => 'Filipenses 1:6'],
+            ['texto' => 'Hermanos míos, tened por sumo gozo cuando os halléis en diversas pruebas.', 'cita' => 'Santiago 1:2'],
+        ];
+        $versiculoDelDia = $versiculos[date('z') % count($versiculos)];
+    @endphp
+
+    <div class="px-6 pt-4" id="versiculo-banner" style="animation: versiculoFadeIn 0.8s ease-out">
+        <div class="bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 border border-amber-200/60 rounded-xl px-5 py-3 flex items-start gap-3 shadow-sm">
+            {{-- Book icon --}}
+            <div class="flex-shrink-0 mt-0.5">
+                <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+                <p class="text-sm text-amber-900/80 leading-relaxed italic">
+                    "{{ $versiculoDelDia['texto'] }}"
+                </p>
+                <p class="text-xs text-amber-600/70 font-semibold mt-1">
+                    — {{ $versiculoDelDia['cita'] }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes versiculoFadeIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+
     {{-- Flash --}}
     @if(session('success'))
     <div class="px-6 pt-5">
