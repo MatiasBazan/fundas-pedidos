@@ -10,49 +10,67 @@ class StatsController extends Controller
 {
     public function index()
     {
-        $userId    = auth()->id();
-        $mesInicio = now()->startOfMonth();
-        $mesFin    = now()->endOfMonth();
+        $userId        = auth()->id();
+        $mesRaw        = request('mes', now()->month);
+        $anio          = (int) request('anio', now()->year);
+        $todosPeriodos = ($mesRaw === '' || $mesRaw === '0');
+        $mes           = $todosPeriodos ? '' : (int) $mesRaw;
 
-        $totalVendido  = Pedido::where('user_id', $userId)
-            ->whereBetween('created_at', [$mesInicio, $mesFin])
+        $mesInicio     = $todosPeriodos ? null : Carbon::createFromDate($anio, $mes, 1)->startOfMonth();
+        $mesFin        = $todosPeriodos ? null : Carbon::createFromDate($anio, $mes, 1)->endOfMonth();
+        $graficoInicio = $todosPeriodos
+            ? now()->subMonths(11)->startOfMonth()
+            : Carbon::createFromDate($anio, $mes, 1)->subMonths(4)->startOfMonth();
+        $graficoFin    = $todosPeriodos ? now()->endOfMonth() : $mesFin;
+
+        $totalVendido = Pedido::where('user_id', $userId)
+            ->when(!$todosPeriodos, fn($q) => $q->whereBetween('created_at', [$mesInicio, $mesFin]))
             ->sum('precio_total');
 
-        $totalComprado = CompraItem::whereHas('compra', fn($q) => $q->whereBetween('created_at', [$mesInicio, $mesFin]))
+        $totalComprado = CompraItem::whereHas('compra', fn($q) => $q
+            ->when(!$todosPeriodos, fn($q2) => $q2->whereBetween('created_at', [$mesInicio, $mesFin])))
             ->sum('precio_total');
 
         $ganancia = $totalVendido - $totalComprado;
 
         $pedidosDisponibles = Pedido::where('user_id', $userId)
-            ->where('estado_pedido', 'disponible')->count();
+            ->where('estado_pedido', 'disponible')
+            ->when(!$todosPeriodos, fn($q) => $q->whereBetween('created_at', [$mesInicio, $mesFin]))
+            ->count();
 
         $pedidosEntregados = Pedido::where('user_id', $userId)
-            ->where('estado_pedido', 'entregado')->count();
+            ->where('estado_pedido', 'entregado')
+            ->when(!$todosPeriodos, fn($q) => $q->whereBetween('created_at', [$mesInicio, $mesFin]))
+            ->count();
 
         $pedidosPagados = Pedido::where('user_id', $userId)
-            ->where('estado_pago', 'pagado')->count();
+            ->where('estado_pago', 'pagado')
+            ->when(!$todosPeriodos, fn($q) => $q->whereBetween('created_at', [$mesInicio, $mesFin]))
+            ->count();
 
         $pedidosNoPagados = Pedido::where('user_id', $userId)
-            ->where('estado_pago', 'no_pagado')->count();
+            ->where('estado_pago', 'no_pagado')
+            ->when(!$todosPeriodos, fn($q) => $q->whereBetween('created_at', [$mesInicio, $mesFin]))
+            ->count();
 
         $ventasPorMes = Pedido::select('created_at', 'precio_total')
             ->where('user_id', $userId)
-            ->where('created_at', '>=', now()->subMonths(5)->startOfMonth())
+            ->whereBetween('created_at', [$graficoInicio, $graficoFin])
             ->get()
             ->groupBy(fn($p) => $p->created_at->format('Y-m'))
-            ->map(fn($group, $mes) => [
-                'mes'   => Carbon::createFromFormat('Y-m', $mes)->translatedFormat('M Y'),
+            ->map(fn($group, $key) => [
+                'mes'   => Carbon::createFromFormat('Y-m', $key)->translatedFormat('M Y'),
                 'total' => round($group->sum('precio_total'), 2),
             ])
             ->sortKeys()
             ->values();
 
-        $comprasPorMes = CompraItem::whereHas('compra', fn($q) => $q->where('created_at', '>=', now()->subMonths(5)->startOfMonth()))
+        $comprasPorMes = CompraItem::whereHas('compra', fn($q) => $q->whereBetween('created_at', [$graficoInicio, $graficoFin]))
             ->with('compra:id,created_at')
             ->get()
             ->groupBy(fn($item) => $item->compra->created_at->format('Y-m'))
-            ->map(fn($group, $mes) => [
-                'mes'   => Carbon::createFromFormat('Y-m', $mes)->translatedFormat('M Y'),
+            ->map(fn($group, $key) => [
+                'mes'   => Carbon::createFromFormat('Y-m', $key)->translatedFormat('M Y'),
                 'total' => round($group->sum('precio_total'), 2),
             ])
             ->sortKeys()
@@ -67,7 +85,10 @@ class StatsController extends Controller
             'pedidosPagados',
             'pedidosNoPagados',
             'ventasPorMes',
-            'comprasPorMes'
+            'comprasPorMes',
+            'mes',
+            'anio',
+            'todosPeriodos'
         ));
     }
 }

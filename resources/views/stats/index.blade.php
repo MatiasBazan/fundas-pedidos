@@ -6,9 +6,49 @@
 
 @section('content')
 
-<div class="mb-6">
+<div class="mb-5">
     <h1 class="text-2xl font-bold text-gray-900">Estadísticas</h1>
-    <p class="text-sm text-gray-500 mt-0.5">Resumen del mes actual · {{ now()->translatedFormat('F Y') }}</p>
+    <p class="text-sm text-gray-500 mt-0.5">
+        @if($todosPeriodos)
+            Todos los períodos
+        @else
+            Resumen de {{ \Carbon\Carbon::createFromDate($anio, $mes, 1)->translatedFormat('F Y') }}
+        @endif
+    </p>
+</div>
+
+{{-- Filtros --}}
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-5">
+    <form method="GET" action="{{ route('stats.index') }}">
+        @php
+            $meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+        @endphp
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Mes</label>
+                <select name="mes" id="selectMes" data-ts>
+                    <option value="">Todos los períodos</option>
+                    @foreach(range(1, 12) as $m)
+                        <option value="{{ $m }}" @selected($m == $mes)>{{ $meses[$m - 1] }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Año</label>
+                <select name="anio" id="selectAnio" data-ts>
+                    @foreach(range(2023, now()->year + 1) as $y)
+                        <option value="{{ $y }}" @selected($y == $anio)>{{ $y }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="flex-1 bg-[#FF2D6B] hover:bg-[#E0245E] text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all">
+                    Filtrar
+                </button>
+                <a href="{{ route('stats.index') }}" class="px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-800 font-medium rounded-xl border border-gray-200 shadow-sm transition">✕</a>
+            </div>
+        </div>
+    </form>
 </div>
 
 {{-- KPI Cards - fila 1 --}}
@@ -21,7 +61,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
             </svg>
         </div>
-        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Vendido este mes</p>
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+            {{ $todosPeriodos ? 'Vendido total' : 'Vendido este mes' }}
+        </p>
         <p class="text-2xl font-bold text-gray-900 mt-1">${{ number_format($totalVendido, 0, ',', '.') }}</p>
         <p class="text-xs text-gray-400 mt-1">suma de pedidos</p>
     </div>
@@ -33,7 +75,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
             </svg>
         </div>
-        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Comprado este mes</p>
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+            {{ $todosPeriodos ? 'Comprado total' : 'Comprado este mes' }}
+        </p>
         <p class="text-2xl font-bold text-gray-900 mt-1">${{ number_format($totalComprado, 0, ',', '.') }}</p>
         <p class="text-xs text-gray-400 mt-1">suma de compras</p>
     </div>
@@ -48,7 +92,9 @@
         </div>
         <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Ganancia estimada</p>
         <p class="text-3xl font-bold {{ $ganancia >= 0 ? 'text-emerald-600' : 'text-rose-600' }} mt-1">${{ number_format($ganancia, 0, ',', '.') }}</p>
-        <p class="text-xs text-gray-400 mt-1">vendido − comprado del mes</p>
+        <p class="text-xs text-gray-400 mt-1">
+            {{ $todosPeriodos ? 'vendido − comprado total' : 'vendido − comprado del mes' }}
+        </p>
     </div>
 
 </div>
@@ -124,7 +170,9 @@
             <span class="w-2.5 h-2.5 bg-[#FF2D6B] rounded-full"></span>
             <h2 class="text-sm font-bold text-gray-800">Ventas por mes</h2>
         </div>
-        <p class="text-xs text-gray-400 mb-5 ml-4">Últimos 6 meses</p>
+        <p class="text-xs text-gray-400 mb-5 ml-4">
+            {{ $todosPeriodos ? 'Últimos 12 meses' : 'Últimos 5 meses' }}
+        </p>
         <canvas id="chartVentas" height="200"></canvas>
     </div>
 
@@ -133,7 +181,9 @@
             <span class="w-2.5 h-2.5 bg-blue-400 rounded-full"></span>
             <h2 class="text-sm font-bold text-gray-800">Compras por mes</h2>
         </div>
-        <p class="text-xs text-gray-400 mb-5 ml-4">Últimos 6 meses</p>
+        <p class="text-xs text-gray-400 mb-5 ml-4">
+            {{ $todosPeriodos ? 'Últimos 12 meses' : 'Últimos 5 meses' }}
+        </p>
         <canvas id="chartCompras" height="200"></canvas>
     </div>
 
@@ -200,6 +250,25 @@
             }]
         },
         options: baseOptions
+    });
+
+    // Deshabilitar año cuando se elige "Todos los períodos"
+    function syncAnioState() {
+        var anioEl  = document.getElementById('selectAnio');
+        var isTodos = document.getElementById('selectMes').value === '';
+        if (anioEl.tomselect) {
+            isTodos ? anioEl.tomselect.disable() : anioEl.tomselect.enable();
+        } else {
+            anioEl.disabled = isTodos;
+        }
+    }
+
+    // El change event del select nativo lo dispara TomSelect al cambiar
+    document.getElementById('selectMes').addEventListener('change', syncAnioState);
+
+    // Diferir el init para que TomSelect ya haya wrapeado los selects
+    document.addEventListener('DOMContentLoaded', function () {
+        setTimeout(syncAnioState, 0);
     });
 </script>
 
