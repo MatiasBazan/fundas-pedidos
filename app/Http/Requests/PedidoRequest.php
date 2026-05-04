@@ -20,6 +20,7 @@ class PedidoRequest extends FormRequest
             'items.*.precio_unitario' => ['required', 'numeric', 'min:0'],
             'nombre'                  => ['required', 'string', 'max:255'],
             'apellido'                => ['required', 'string', 'max:255'],
+            'fecha'                   => ['required', 'date'],
             'estado_pedido'           => ['required', 'in:disponible,entregado'],
             'estado_pago'             => ['required', 'in:no_pagado,pagado'],
             'tipo_pago'               => [$this->input('estado_pago') === 'pagado' ? 'required' : 'nullable', 'in:efectivo,transferencia'],
@@ -38,6 +39,8 @@ class PedidoRequest extends FormRequest
             'items.*.precio_unitario.min'      => 'El precio debe ser mayor o igual a 0.',
             'nombre.required'                  => 'El nombre es obligatorio.',
             'apellido.required'                => 'El apellido es obligatorio.',
+            'fecha.required'                   => 'La fecha es obligatoria.',
+            'fecha.date'                       => 'La fecha debe ser una fecha válida.',
             'tipo_pago.required'               => 'El tipo de pago es obligatorio cuando el estado es pagado.',
         ];
     }

@@ -101,7 +101,8 @@
                 </div>
                 <span class="text-[#FF2D6B] font-bold text-sm">${{ number_format($pedido->precio_total, 2, ',', '.') }}</span>
             </div>
-            <p class="text-xs text-gray-500 mb-3">{{ $pedido->nombre }} {{ $pedido->apellido }}</p>
+            <p class="text-xs text-gray-500 mb-1">{{ $pedido->nombre }} {{ $pedido->apellido }}</p>
+            <p class="text-xs text-gray-400 mb-3">{{ $pedido->fecha?->format('d/m/Y') ?? '—' }}</p>
             <div class="flex flex-wrap gap-1.5 mb-3">
                 <x-badge-estado-pedido :estado="$pedido->estado_pedido" />
                 <x-badge-estado-pago :estado="$pedido->estado_pago" />
@@ -140,6 +141,7 @@
                 <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">#</th>
                 <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Productos</th>
                 <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Cliente</th>
+                <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Fecha</th>
                 <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Total</th>
                 <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Pedido</th>
                 <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Pago</th>
@@ -158,6 +160,7 @@
                         @endif
                     </td>
                 <td class="px-5 py-4 text-gray-600">{{ $pedido->nombre }} {{ $pedido->apellido }}</td>
+                <td class="px-5 py-4 text-gray-500 text-xs">{{ $pedido->fecha?->format('d/m/Y') ?? '—' }}</td>
                 <td class="px-5 py-4 font-bold text-gray-900">${{ number_format($pedido->precio_total, 2, ',', '.') }}</td>
                 <td class="px-5 py-4"><x-badge-estado-pedido :estado="$pedido->estado_pedido" /></td>
                 <td class="px-5 py-4"><x-badge-estado-pago :estado="$pedido->estado_pago" /></td>
@@ -192,7 +195,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="8" class="px-5 py-16 text-center">
+                <td colspan="9" class="px-5 py-16 text-center">
                     <svg class="w-12 h-12 text-gray-200 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
                     </svg>

@@ -24,7 +24,7 @@ class StatsController extends Controller
         $graficoFin    = $todosPeriodos ? now()->endOfMonth() : $mesFin;
 
         $totalVendido = Pedido::where('user_id', $userId)
-            ->when(!$todosPeriodos, fn($q) => $q->whereBetween('created_at', [$mesInicio, $mesFin]))
+            ->when(!$todosPeriodos, fn($q) => $q->whereBetween('fecha', [$mesInicio->toDateString(), $mesFin->toDateString()]))
             ->sum('precio_total');
 
         $totalComprado = CompraItem::whereHas('compra', fn($q) => $q
@@ -35,29 +35,29 @@ class StatsController extends Controller
 
         $pedidosDisponibles = Pedido::where('user_id', $userId)
             ->where('estado_pedido', 'disponible')
-            ->when(!$todosPeriodos, fn($q) => $q->whereBetween('created_at', [$mesInicio, $mesFin]))
+            ->when(!$todosPeriodos, fn($q) => $q->whereBetween('fecha', [$mesInicio->toDateString(), $mesFin->toDateString()]))
             ->count();
 
         $pedidosEntregados = Pedido::where('user_id', $userId)
             ->where('estado_pedido', 'entregado')
-            ->when(!$todosPeriodos, fn($q) => $q->whereBetween('created_at', [$mesInicio, $mesFin]))
+            ->when(!$todosPeriodos, fn($q) => $q->whereBetween('fecha', [$mesInicio->toDateString(), $mesFin->toDateString()]))
             ->count();
 
         $pedidosPagados = Pedido::where('user_id', $userId)
             ->where('estado_pago', 'pagado')
-            ->when(!$todosPeriodos, fn($q) => $q->whereBetween('created_at', [$mesInicio, $mesFin]))
+            ->when(!$todosPeriodos, fn($q) => $q->whereBetween('fecha', [$mesInicio->toDateString(), $mesFin->toDateString()]))
             ->count();
 
         $pedidosNoPagados = Pedido::where('user_id', $userId)
             ->where('estado_pago', 'no_pagado')
-            ->when(!$todosPeriodos, fn($q) => $q->whereBetween('created_at', [$mesInicio, $mesFin]))
+            ->when(!$todosPeriodos, fn($q) => $q->whereBetween('fecha', [$mesInicio->toDateString(), $mesFin->toDateString()]))
             ->count();
 
-        $ventasPorMes = Pedido::select('created_at', 'precio_total')
+        $ventasPorMes = Pedido::select('fecha', 'precio_total')
             ->where('user_id', $userId)
-            ->whereBetween('created_at', [$graficoInicio, $graficoFin])
+            ->whereBetween('fecha', [$graficoInicio->toDateString(), $graficoFin->toDateString()])
             ->get()
-            ->groupBy(fn($p) => $p->created_at->format('Y-m'))
+            ->groupBy(fn($p) => $p->fecha->format('Y-m'))
             ->map(fn($group, $key) => [
                 'mes'   => Carbon::createFromFormat('Y-m', $key)->translatedFormat('M Y'),
                 'total' => round($group->sum('precio_total'), 2),

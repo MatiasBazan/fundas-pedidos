@@ -36,6 +36,12 @@
                        class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all @error('apellido') border-red-300 bg-red-50 @enderror">
                 @error('apellido') <p class="text-red-500 text-xs mt-1.5">{{ $message }}</p> @enderror
             </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1.5">Fecha <span class="text-red-400">*</span></label>
+                <input type="date" name="fecha" value="{{ old('fecha', now()->toDateString()) }}"
+                       class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF2D6B]/20 focus:border-[#FF2D6B] transition-all @error('fecha') border-red-300 bg-red-50 @enderror">
+                @error('fecha') <p class="text-red-500 text-xs mt-1.5">{{ $message }}</p> @enderror
+            </div>
         </div>
     </div>
 
@@ -131,9 +137,9 @@
             Agregar producto
         </button>
 
-        <div class="flex items-center justify-between bg-[#FF2D6B] rounded-xl px-5 py-4">
-            <span class="text-sm font-semibold text-white/80">Total general</span>
-            <span class="text-2xl font-bold text-white" x-text="'$' + fmt(totalGeneral)">$0,00</span>
+        <div class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-6 py-4">
+            <span class="text-sm font-medium text-gray-500">Total general</span>
+            <span class="text-xl font-bold text-[#FF2D6B]" x-text="'$' + fmt(totalGeneral)">$0,00</span>
         </div>
 
         @endif

@@ -12,7 +12,7 @@
     <div class="flex items-start justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">Venta #{{ $pedido->id }}</h1>
-            <p class="text-sm text-gray-500 mt-0.5">{{ $pedido->nombre }} {{ $pedido->apellido }} · {{ $pedido->created_at->format('d/m/Y H:i') }}</p>
+            <p class="text-sm text-gray-500 mt-0.5">{{ $pedido->nombre }} {{ $pedido->apellido }} · {{ $pedido->fecha?->format('d/m/Y') ?? '—' }}</p>
         </div>
         <span class="text-2xl font-bold text-[#FF2D6B] flex-shrink-0">${{ number_format($pedido->precio_total, 2, ',', '.') }}</span>
     </div>
@@ -73,7 +73,7 @@
                 Cliente
             </h2>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-gray-50">
+        <div class="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-gray-50">
             <div class="px-6 py-4">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Nombre</p>
                 <p class="text-gray-900 font-medium">{{ $pedido->nombre }}</p>
@@ -81,6 +81,10 @@
             <div class="px-6 py-4">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Apellido</p>
                 <p class="text-gray-900 font-medium">{{ $pedido->apellido }}</p>
+            </div>
+            <div class="px-6 py-4">
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Fecha</p>
+                <p class="text-gray-900 font-medium">{{ $pedido->fecha?->format('d/m/Y') ?? '—' }}</p>
             </div>
         </div>
     </div>

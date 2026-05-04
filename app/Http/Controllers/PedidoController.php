@@ -56,6 +56,7 @@ class PedidoController extends Controller
                 'user_id'       => auth()->id(),
                 'nombre'        => $data['nombre'],
                 'apellido'      => $data['apellido'],
+                'fecha'         => $data['fecha'],
                 'estado_pedido' => $data['estado_pedido'],
                 'estado_pago'   => $data['estado_pago'],
                 'tipo_pago'     => $data['tipo_pago'],
@@ -195,6 +196,7 @@ class PedidoController extends Controller
             $pedido->update([
                 'nombre'        => $data['nombre'],
                 'apellido'      => $data['apellido'],
+                'fecha'         => $data['fecha'],
                 'estado_pedido' => $data['estado_pedido'],
                 'estado_pago'   => $data['estado_pago'],
                 'tipo_pago'     => $data['tipo_pago'],
@@ -380,11 +382,11 @@ private function invalidarCacheStock(): void
             ->limit(5)
             ->get();
 
-        $pedidosPorMes = Pedido::select('created_at', 'precio_total')
+        $pedidosPorMes = Pedido::select('fecha', 'precio_total')
             ->where('user_id', $userId)
-            ->where('created_at', '>=', now()->subMonths(6))
+            ->where('fecha', '>=', now()->subMonths(6)->startOfMonth()->toDateString())
             ->get()
-            ->groupBy(fn($p) => $p->created_at->format('Y-m'))
+            ->groupBy(fn($p) => $p->fecha->format('Y-m'))
             ->map(fn($group, $mes) => [
                 'mes'      => $mes,
                 'cantidad' => $group->count(),

@@ -14,10 +14,15 @@ class Pedido extends Model
         'user_id',
         'nombre',
         'apellido',
+        'fecha',
         'precio_total',
         'estado_pedido',
         'estado_pago',
         'tipo_pago',
+    ];
+
+    protected $casts = [
+        'fecha' => 'date',
     ];
 
     public function user()
